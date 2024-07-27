@@ -34,7 +34,8 @@ rule prepare_fasta:
         time=30
     shell:
         """
-        #concatenate and rename fasta
+        #pending to add the renaming script
+        cat {input} > {output}
         """
 
 rule index_fasta:
@@ -43,6 +44,7 @@ rule index_fasta:
     output:
         "pipeline/input/allgenomes.bt2"
     params:
+        base="pipeline/input/allgenomes"
         jobname="allgenomes.in"
     threads:
         1
@@ -52,6 +54,8 @@ rule index_fasta:
     shell:
         """
         #index fasta
+        module load bowtie2/2.5.2
+        bowtie-build {input} {params.base}
         """
 
 rule prepare_gtf:
@@ -68,7 +72,7 @@ rule prepare_gtf:
         time=30
     shell:
         """
-        #rename gtfs
+        #script to rename gtfs to be added
         """
 
 rule extract_targets:
@@ -86,7 +90,7 @@ rule extract_targets:
         time=30
     shell:
         """
-        #extract target fasta
+        bedtools getfasta -fi {input.fasta} -bed {input.gtf} > {output}
         """
 
 rule generate_kmers:
