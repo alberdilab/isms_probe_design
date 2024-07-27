@@ -73,7 +73,7 @@ rule prepare_gtf:
 
 rule extract_targets:
     input:
-        fasta="pipeline/input/allgenomes.fa"
+        fasta="pipeline/input/allgenomes.fa",
         gtf="pipeline/input/{target}.gtf"
     output:
         "pipeline/extract/{target}.fa"
@@ -108,7 +108,7 @@ rule generate_kmers:
 
 rule generate_probes:
     input:
-        fasta="pipeline/extract/{target}.fa"
+        fasta="pipeline/extract/{target}.fa",
         jf="pipeline/kmers/{target}.jf"
     output:
         "pipeline/probes/{target}.fq"
@@ -126,7 +126,7 @@ rule generate_probes:
 
 rule align_probes:
     input:
-        fq="pipeline/probes/{target}.fq"
+        fq="pipeline/probes/{target}.fq",
         ref="pipeline/input/allgenomes.bt2"
     output:
         "pipeline/map/{target}.sam"
