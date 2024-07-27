@@ -44,7 +44,7 @@ rule index_fasta:
     output:
         "pipeline/input/allgenomes.bt2"
     params:
-        base="pipeline/input/allgenomes"
+        base="pipeline/input/allgenomes",
         jobname="allgenomes.in"
     threads:
         1
