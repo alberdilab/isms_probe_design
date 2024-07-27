@@ -1,5 +1,11 @@
 # InSituMicrobeSeq probe design pipeline
 
+### Clone this repository
+```
+git clone 
+```
+
+
 ### Prepare input files
 - FASTA files (.fa) of all considered genomes must be stored in the `genomes` folder. 
 - GTF files (.gtf) containing target sequences must be stored in the `targets` folder.
