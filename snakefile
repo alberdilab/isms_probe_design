@@ -110,7 +110,7 @@ rule generate_kmers:
     shell:
         """
         module load jellyfish/2.2.10
-        jellyfish count -m 18 -o {output} --out-counter-len 1 -L 2 {input}
+        jellyfish count -m 18 -s 3300M -o {output} --out-counter-len 1 -L 2 {input}
         """
 
 rule generate_probes:
