@@ -18,7 +18,7 @@ targets, = glob_wildcards("targets/{target}.gtf")
 #Expand target files
 rule all:
     input:
-        expand("results/probes/{target}.tsv", target=targets)
+        expand("probes/{target}.tsv", target=targets)
 
 rule prepare_fasta:
     input:
