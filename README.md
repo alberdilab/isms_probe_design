@@ -2,9 +2,8 @@
 
 ### Clone this repository
 ```
-git clone 
+git clone https://github.com/alberdilab/isms_probe_design.git
 ```
-
 
 ### Prepare input files
 - FASTA files (.fa) of all considered genomes must be stored in the `genomes` folder. 
