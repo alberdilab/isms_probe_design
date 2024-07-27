@@ -9,6 +9,8 @@ git clone https://github.com/alberdilab/isms_probe_design.git
 - FASTA files (.fa) of all considered genomes must be stored in the `genomes` folder. 
 - GTF files (.gtf) containing target sequences must be stored in the `targets` folder.
 
+The mock data files contain 3 fasta and 2 gtf files. The file `target1.gtf` contains includes two regions from genome2 and genome3, while the file `target2.gtf` contains the entire genome1 as target sequence.
+
 ### Run pipeline
 On a screen session, launch the snakefile to design the probes
 ```
