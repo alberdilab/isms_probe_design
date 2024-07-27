@@ -26,7 +26,7 @@ rule prepare_fasta:
     output:
         "pipeline/input/allgenomes.fa"
     params:
-        jobname="{sample}.pf"
+        jobname="allgenomes.pf"
     threads:
         1
     resources:
@@ -36,14 +36,31 @@ rule prepare_fasta:
         """
         #concatenate and rename fasta
         """
-        
+
+rule index_fasta:
+    input:
+        "pipeline/input/allgenomes.fa"
+    output:
+        "pipeline/input/allgenomes.bt2"
+    params:
+        jobname="allgenomes.in"
+    threads:
+        1
+    resources:
+        mem_gb=8,
+        time=30
+    shell:
+        """
+        #index fasta
+        """
+
 rule prepare_gtf:
     input:
         "targets/{target}.gtf"
     output:
         "pipeline/input/{target}.gtf"
     params:
-        jobname="{sample}.pg"
+        jobname="{target}.pg"
     threads:
         1
     resources:
@@ -61,7 +78,7 @@ rule extract_targets:
     output:
         "pipeline/extract/{target}.fa"
     params:
-        jobname="{sample}.ex"
+        jobname="{target}.ex"
     threads:
         1
     resources:
@@ -78,7 +95,7 @@ rule generate_kmers:
     output:
         "pipeline/kmers/{target}.jf"
     params:
-        jobname="{sample}.jf"
+        jobname="{target}.jf"
     threads:
         1
     resources:
@@ -89,14 +106,14 @@ rule generate_kmers:
         #generate kmer profiles
         """
 
-rule generate_kmers:
+rule generate_probes:
     input:
         fasta="pipeline/extract/{target}.fa"
         jf="pipeline/kmers/{target}.jf"
     output:
-        "pipeline/kmers/{target}.jf"
+        "pipeline/probes/{target}.fq"
     params:
-        jobname="{sample}.jf"
+        jobname="{target}.gp"
     threads:
         1
     resources:
@@ -104,5 +121,57 @@ rule generate_kmers:
         time=30
     shell:
         """
-        #generate kmer profiles
+        #generate probes with blockparse
+        """
+
+rule align_probes:
+    input:
+        fq="pipeline/probes/{target}.fq"
+        ref="pipeline/input/allgenomes.bt2"
+    output:
+        "pipeline/map/{target}.sam"
+    params:
+        jobname="{target}.mp"
+    threads:
+        1
+    resources:
+        mem_gb=8,
+        time=30
+    shell:
+        """
+        #aligns probes to all genomes
+        """
+
+rule score_probes:
+    input:
+        "pipeline/map/{target}.sam"
+    output:
+        "pipeline/score/{target}.tsv"
+    params:
+        jobname="{target}.sc"
+    threads:
+        1
+    resources:
+        mem_gb=8,
+        time=30
+    shell:
+        """
+        #scores probes
+        """
+
+rule filter_probes:
+    input:
+        "pipeline/score/{target}.tsv"
+    output:
+        "probes/{target}.tsv"
+    params:
+        jobname="{target}.fi"
+    threads:
+        1
+    resources:
+        mem_gb=8,
+        time=30
+    shell:
+        """
+        #filters probes
         """
