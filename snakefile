@@ -90,6 +90,7 @@ rule extract_targets:
         time=30
     shell:
         """
+        module load bedtools/2.30.0
         bedtools getfasta -fi {input.fasta} -bed {input.gtf} > {output}
         """
 
@@ -107,7 +108,8 @@ rule generate_kmers:
         time=30
     shell:
         """
-        #generate kmer profiles
+        module load jellyfish/2.2.10
+        
         """
 
 rule generate_probes:
