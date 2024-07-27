@@ -55,7 +55,7 @@ rule index_fasta:
         """
         #index fasta
         module load bowtie2/2.5.2
-        bowtie-build {input} {params.base}
+        bowtie2-build {input} {params.base}
         """
 
 rule prepare_gtf:
@@ -72,7 +72,8 @@ rule prepare_gtf:
         time=30
     shell:
         """
-        #script to rename gtfs to be added
+        cp {input} {output}
+        #replace this with the script to rename gtfs
         """
 
 rule extract_targets:
