@@ -1,1 +1,10 @@
-
+name: biopython_env
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - python=3.8
+  - biopython
+  - pandas
+  - numpy
