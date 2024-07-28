@@ -97,28 +97,30 @@ rule index_fasta:
         bowtie2-build {input} {params.base}
         """
 
-rule prepare_gtf:
+rule unique_ids_gtf:
     input:
-        "targets/{target}.gtf"
+        gtf="targets/{target}.gtf",
+        headers="pipeline/renamed/headers.tsv"
     output:
-        "pipeline/input/{target}.gtf"
+        "pipeline/renamed/{target}.gtf"
     params:
         jobname="{target}.pg"
     threads:
         1
     resources:
         mem_gb=8,
-        time=30
+        time=5
+    conda:
+        "environment.yaml"
     shell:
         """
-        cp {input} {output}
-        #replace this with the script to rename gtfs
+        python scripts/update_gtf_ids.py {input.gtf} {input.headers} {output}
         """
 
 rule extract_targets:
     input:
         fasta="pipeline/renamed/allgenomes.fa",
-        gtf="pipeline/input/{target}.gtf"
+        gtf="pipeline/renamed/{target}.gtf"
     output:
         "pipeline/extract/{target}.fa"
     params:
