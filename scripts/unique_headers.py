@@ -1,5 +1,4 @@
-# unique_headers.py
-
+import sys
 from Bio import SeqIO
 
 def generate_header_mapping(fasta_file, mapping_file):
@@ -22,3 +21,8 @@ def generate_header_mapping(fasta_file, mapping_file):
                 mapfile.write(f"{header}\t{header}\n")
             headers.add(updated_headers[header])
     return updated_headers
+
+if __name__ == "__main__":
+    fasta_file = sys.argv[1]
+    mapping_file = sys.argv[2]
+    generate_header_mapping(fasta_file, mapping_file)
