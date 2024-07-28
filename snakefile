@@ -62,7 +62,7 @@ rule unique_headers_fasta:
         fasta="pipeline/input/allgenomes.fa",
         headers="pipeline/renamed/headers.tsv"
     output:
-        fasta="pipeline/renamed/allgenomes.fa"
+        "pipeline/renamed/allgenomes.fa"
     params:
         jobname="allgenomes.uf"
     threads:
@@ -70,19 +70,10 @@ rule unique_headers_fasta:
     resources:
         mem_gb=8,
         time=5
-    run:
-        import pandas as pd
-        from Bio import SeqIO
-        # Load the mapping file
-        header_map = pd.read_csv(input.headers, sep='\t')
-        header_map = dict(zip(header_map.Old_Header, header_map.New_Header))
-        # Update the FASTA file
-        sequences = []
-        for record in SeqIO.parse(input.fasta, "fasta"):
-            record.id = header_map[record.id]
-            record.description = header_map[record.id]
-            sequences.append(record)
-        SeqIO.write(sequences, output.fasta, "fasta")
+    shell:
+        """
+        python scripts/update_fasta_headers.py {input.fasta} {input.headers} {output}
+        """
 
 rule index_fasta:
     input:
