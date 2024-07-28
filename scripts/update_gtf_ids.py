@@ -20,4 +20,4 @@ if __name__ == "__main__":
     input_gtf = sys.argv[1]
     mapping_file = sys.argv[2]
     output_gtf = sys.argv[3]
-    update_fasta_headers(input_gtf, mapping_file, output_gtf)
+    update_gtf_file(input_gtf, mapping_file, output_gtf)
