@@ -52,8 +52,10 @@ rule unique_headers:
         time=5
     conda:
         "environment.yaml"
-    script:
-        "scripts/unique_headers.py {input} {output}"
+    shell:
+        """
+        python scripts/unique_headers.py {input} {output}
+        """
 
 rule unique_headers_fasta:
     input:
