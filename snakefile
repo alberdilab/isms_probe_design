@@ -136,31 +136,18 @@ rule extract_targets:
         bedtools getfasta -fi {input.fasta} -bed {input.gtf} > {output}
         """
 
-rule generate_kmers:
-    input:
-        "pipeline/extract/{target}.fa"
-    output:
-        "pipeline/kmers/{target}.jf"
-    params:
-        jobname="{target}.jf"
-    threads:
-        1
-    resources:
-        mem_gb=8,
-        time=30
-    shell:
-        """
-        module load jellyfish/2.2.10
-        jellyfish count -m 18 -s 3300M -o {output} --out-counter-len 1 -L 2 {input}
-        """
-
 rule generate_probes:
     input:
         "pipeline/extract/{target}.fa"
     output:
-        "pipeline/probes/{target}.fq"
+        base="pipeline/probes/{target}"
+        file="pipeline/probes/{target}.fastq"
     params:
-        jobname="{target}.gp"
+        jobname="{target}.gp",
+        min_length=36
+        max_length=41
+        min_tm=42
+        max_tm=47
     threads:
         1
     resources:
@@ -170,12 +157,12 @@ rule generate_probes:
         "envs/oligominer.yaml"
     shell:
         """
-        python scripts/blockParse.py {input} {output}
+        python scripts/blockParse.py  -l {params.min_length} -L {params.max_length} -t {params.min_tm} -T {params.max_tm} -f {input} -o {output.base}
         """
 
 rule align_probes:
     input:
-        fq="pipeline/probes/{target}.fq",
+        fq="pipeline/probes/{target}.fastq",
         ref="pipeline/renamed/allgenomes.bt2"
     output:
         "pipeline/map/{target}.sam"
