@@ -1,0 +1,9 @@
+name: biopython_env
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - python=3.8  # or any other version you need
+  - biopython
+  - pandas  # Add other dependencies here if needed
