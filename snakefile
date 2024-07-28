@@ -50,6 +50,8 @@ rule unique_headers:
     resources:
         mem_gb=8,
         time=5
+    conda:
+        "environment.yaml"
     script:
         "scripts/unique_headers.py {input} {output}"
 
