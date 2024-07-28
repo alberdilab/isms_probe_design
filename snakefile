@@ -140,13 +140,13 @@ rule generate_probes:
     input:
         "pipeline/extract/{target}.fa"
     output:
-        base="pipeline/probes/{target}"
+        base="pipeline/probes/{target}",
         file="pipeline/probes/{target}.fastq"
     params:
         jobname="{target}.gp",
-        min_length=36
-        max_length=41
-        min_tm=42
+        min_length=36,
+        max_length=41,
+        min_tm=42,
         max_tm=47
     threads:
         1
