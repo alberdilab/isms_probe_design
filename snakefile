@@ -42,32 +42,37 @@ rule unique_headers:
     input:
         "pipeline/input/allgenomes.fa"
     output:
-        "pipeline/renamed/allgenomes.fa"
+        "pipeline/renamed/headers.tsv"
+    script:
+        "scripts/unique_headers.py"
+
+rule unique_headers_fasta:
+    input:
+        fasta="pipeline/input/allgenomes.fa",
+        headers="pipeline/renamed/headers.tsv"
+    output:
+        fasta="pipeline/renamed/allgenomes.fa"
     run:
         import pandas as pd
         from Bio import SeqIO
-
         # Load the mapping file
-        header_map = pd.read_csv(input.mapping_file, sep='\t')
+        header_map = pd.read_csv(input.headers, sep='\t')
         header_map = dict(zip(header_map.Old_Header, header_map.New_Header))
-
         # Update the FASTA file
         sequences = []
-        for record in SeqIO.parse(input.combined_fasta, "fasta"):
+        for record in SeqIO.parse(input.fasta, "fasta"):
             record.id = header_map[record.id]
             record.description = header_map[record.id]
             sequences.append(record)
-        
-        SeqIO.write(sequences, output.renamed_fasta, "fasta")
-
+        SeqIO.write(sequences, output.fasta, "fasta")
 
 rule index_fasta:
     input:
-        "pipeline/input/allgenomes.fa"
+        "pipeline/renamed/allgenomes.fa"
     output:
-        "pipeline/input/allgenomes.bt2"
+        "pipeline/renamed/allgenomes.bt2"
     params:
-        base="pipeline/input/allgenomes",
+        base="pipeline/renamed/allgenomes",
         jobname="allgenomes.in"
     threads:
         1
@@ -101,7 +106,7 @@ rule prepare_gtf:
 
 rule extract_targets:
     input:
-        fasta="pipeline/input/allgenomes.fa",
+        fasta="pipeline/renamed/allgenomes.fa",
         gtf="pipeline/input/{target}.gtf"
     output:
         "pipeline/extract/{target}.fa"
