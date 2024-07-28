@@ -70,6 +70,8 @@ rule unique_headers_fasta:
     resources:
         mem_gb=8,
         time=5
+    conda:
+        "environment.yaml"
     shell:
         """
         python scripts/update_fasta_headers.py {input.fasta} {input.headers} {output}
