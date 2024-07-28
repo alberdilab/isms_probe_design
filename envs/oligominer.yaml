@@ -1,0 +1,9 @@
+name: oligominer_env
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+dependencies:
+  - python=2.7.16
+  - biopython=1.74
+  - pip=19.2.3
