@@ -21,4 +21,4 @@ if __name__ == "__main__":
     input_fasta = sys.argv[1]
     mapping_file = sys.argv[2]
     output_fasta = sys.argv[3]
-    update_fasta_headers(fasta_file, mapping_file,output_fasta)
+    update_fasta_headers(input_fasta, mapping_file,output_fasta)
