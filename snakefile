@@ -43,6 +43,13 @@ rule unique_headers:
         "pipeline/input/allgenomes.fa"
     output:
         "pipeline/renamed/headers.tsv"
+    params:
+        jobname="allgenomes.uh"
+    threads:
+        1
+    resources:
+        mem_gb=8,
+        time=5
     script:
         "scripts/unique_headers.py"
 
@@ -52,6 +59,13 @@ rule unique_headers_fasta:
         headers="pipeline/renamed/headers.tsv"
     output:
         fasta="pipeline/renamed/allgenomes.fa"
+    params:
+        jobname="allgenomes.uf"
+    threads:
+        1
+    resources:
+        mem_gb=8,
+        time=5
     run:
         import pandas as pd
         from Bio import SeqIO
