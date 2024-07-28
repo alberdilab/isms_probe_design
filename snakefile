@@ -162,7 +162,7 @@ rule generate_probes:
 rule align_probes:
     input:
         fq="pipeline/probes/{target}.fq",
-        ref="pipeline/input/allgenomes.bt2"
+        ref="pipeline/renamed/allgenomes.bt2"
     output:
         "pipeline/map/{target}.sam"
     params:
