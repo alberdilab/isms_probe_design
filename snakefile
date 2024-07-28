@@ -20,7 +20,7 @@ rule all:
     input:
         expand("probes/{target}.tsv", target=targets)
 
-rule prepare_fasta:
+rule concatenate_fasta:
     input:
         expand("genomes/{genome}.fa", genome=genomes)
     output:
@@ -37,6 +37,29 @@ rule prepare_fasta:
         #pending to add the renaming script
         cat {input} > {output}
         """
+
+rule unique_headers:
+    input:
+        "pipeline/input/allgenomes.fa"
+    output:
+        "pipeline/renamed/allgenomes.fa"
+    run:
+        import pandas as pd
+        from Bio import SeqIO
+
+        # Load the mapping file
+        header_map = pd.read_csv(input.mapping_file, sep='\t')
+        header_map = dict(zip(header_map.Old_Header, header_map.New_Header))
+
+        # Update the FASTA file
+        sequences = []
+        for record in SeqIO.parse(input.combined_fasta, "fasta"):
+            record.id = header_map[record.id]
+            record.description = header_map[record.id]
+            sequences.append(record)
+        
+        SeqIO.write(sequences, output.renamed_fasta, "fasta")
+
 
 rule index_fasta:
     input:
