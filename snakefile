@@ -51,7 +51,7 @@ rule unique_headers:
         mem_gb=8,
         time=5
     conda:
-        "environment.yaml"
+        "envs/biopython.yaml"
     shell:
         """
         python scripts/unique_headers.py {input} {output}
@@ -71,7 +71,7 @@ rule unique_headers_fasta:
         mem_gb=8,
         time=5
     conda:
-        "environment.yaml"
+        "envs/biopython.yaml"
     shell:
         """
         python scripts/update_fasta_headers.py {input.fasta} {input.headers} {output}
@@ -111,7 +111,7 @@ rule unique_ids_gtf:
         mem_gb=8,
         time=5
     conda:
-        "environment.yaml"
+        "envs/biopython.yaml"
     shell:
         """
         python scripts/update_gtf_ids.py {input.gtf} {input.headers} {output}
@@ -156,8 +156,7 @@ rule generate_kmers:
 
 rule generate_probes:
     input:
-        fasta="pipeline/extract/{target}.fa",
-        jf="pipeline/kmers/{target}.jf"
+        "pipeline/extract/{target}.fa"
     output:
         "pipeline/probes/{target}.fq"
     params:
@@ -167,9 +166,11 @@ rule generate_probes:
     resources:
         mem_gb=8,
         time=30
+    conda:
+        "envs/oligominer.yaml"
     shell:
         """
-        #generate probes with blockparse
+        python scripts/blockParse.py {input} {output}
         """
 
 rule align_probes:
