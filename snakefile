@@ -51,7 +51,7 @@ rule unique_headers:
         mem_gb=8,
         time=5
     script:
-        "unique_headers.py {input} {output}"
+        "scripts/unique_headers.py {input} {output}"
 
 rule unique_headers_fasta:
     input:
