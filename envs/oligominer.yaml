@@ -1,5 +1,6 @@
 name: oligominer_env
 channels:
+  - beliveau-lab
   - bioconda
   - conda-forge
   - defaults
@@ -7,3 +8,4 @@ dependencies:
   - python=2.7.16
   - biopython=1.74
   - pip=19.2.3
+  - beliveau-lab=1.0.0
