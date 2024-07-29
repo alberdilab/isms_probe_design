@@ -677,7 +677,7 @@ class SequenceCrawler:
 
             # Build the output file.
             for i, (start, end, seq) in enumerate(cands):
-                outList.append('%s\t%s\t%s\t%s\t%s' % (chrom, start, end, seq,
+                outList.append('%s\t%s\t%s\t%s\t%s' % (chrom.split(':')[0], chrom.split(':')[1].split('-')[0]+start, chrom.split(':')[1].split('-')[1]+end, seq,
                                                        self.BedprobeTm(seq)))
 
             # Write the output file.
