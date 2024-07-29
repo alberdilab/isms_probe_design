@@ -179,6 +179,25 @@ rule align_probes:
         bowtie2 -x {params.ref} -q {input.fq} --threads {threads} --very-sensitive-local -k 100 | samtools view -bS - > {output}
         """
 
+rule alignment_pairwise:
+    input:
+        "pipeline/map/{target}.bam"
+    output:
+        "pipeline/map/{target}.pair"
+    params:
+        jobname="{target}.pa"
+    threads:
+        1
+    resources:
+        mem_gb=8,
+        time=30
+    conda:
+        "envs/oligominer.yaml"
+    shell:
+        """
+        samtools view {input} | sam2pairwise > {output}
+        """
+
 rule score_probes:
     input:
         "pipeline/map/{target}.bam"
