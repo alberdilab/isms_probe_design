@@ -555,7 +555,7 @@ class SequenceCrawler:
             headerParse = headerLine.split(';')
 
             if len(headerParse) == 1:
-                chrom = headerLine.split('>')[0]
+                chrom = headerLine.split('>')[1]
                 self.start = 1
                 stop = len(self.block)
             else:
