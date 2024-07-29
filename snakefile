@@ -164,7 +164,7 @@ rule align_probes:
         fq="pipeline/probes/{target}.fastq",
         ref="pipeline/renamed/allgenomes.rev.1.bt2"
     output:
-        "pipeline/map/{target}.sam"
+        "pipeline/map/{target}.bam"
     params:
         jobname="{target}.mp",
         ref="pipeline/renamed/allgenomes"
@@ -181,7 +181,7 @@ rule align_probes:
 
 rule score_probes:
     input:
-        "pipeline/map/{target}.sam"
+        "pipeline/map/{target}.bam"
     output:
         "pipeline/score/{target}.tsv"
     params:
