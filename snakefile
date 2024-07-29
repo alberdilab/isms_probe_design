@@ -183,7 +183,8 @@ rule alignment_pairwise:
     input:
         "pipeline/map/{target}.bam"
     output:
-        "pipeline/map/{target}.pair"
+        pair="pipeline/map/{target}.pair",
+        scores="pipeline/map/{target}.txt"
     params:
         jobname="{target}.pa"
     threads:
@@ -196,12 +197,33 @@ rule alignment_pairwise:
     shell:
         """
         module load samtools/1.20
-        samtools view {input} | sam2pairwise > {output}
+        samtools view {input} | sam2pairwise > {output.pair}
+        samtools view {input} | awk '{{print $12}}' > {output.scores}
+        """
+
+rule parse_pairwise:
+    input:
+        pair="pipeline/map/{target}.pair",
+        scores="pipeline/map/{target}.txt"
+    output:
+        "pipeline/alignments/{target}.csv"
+    params:
+        jobname="{target}.al"
+    threads:
+        1
+    resources:
+        mem_gb=8,
+        time=30
+    conda:
+        "envs/oligominer.yaml"
+    shell:
+        """
+        python scripts/parse_pairwise.py {input.pair} {input.scores}
         """
 
 rule score_probes:
     input:
-        "pipeline/map/{target}.pair"
+        "pipeline/map/{target}.csv"
     output:
         "pipeline/score/{target}.tsv"
     params:
