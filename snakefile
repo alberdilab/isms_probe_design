@@ -166,7 +166,8 @@ rule align_probes:
     output:
         "pipeline/map/{target}.sam"
     params:
-        jobname="{target}.mp"
+        jobname="{target}.mp",
+        ref="pipeline/renamed/allgenomes"
     threads:
         1
     resources:
@@ -175,7 +176,7 @@ rule align_probes:
     shell:
         """
         module load bowtie2/2.5.2 samtools/1.20
-        bowtie2 -x {input.ref} -q {input.fq} --threads {threads} --very-sensitive-local -k 100 | samtools view -bS - > {output}
+        bowtie2 -x {params.ref} -q {input.fq} --threads {threads} --very-sensitive-local -k 100 | samtools view -bS - > {output}
         """
 
 rule score_probes:
