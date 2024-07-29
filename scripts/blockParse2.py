@@ -43,6 +43,8 @@ import timeit
 # Import the math module.
 import math
 
+import tempfile
+
 # Import Biopython modules.
 from Bio.SeqUtils import MeltingTemp as mt
 from Bio.Seq import Seq
@@ -551,22 +553,10 @@ class SequenceCrawler:
         with open(self.inputFile, 'r') as f:
             headerLine = f.readline()
 
-        if self.headerVal is None:
-            headerParse = headerLine.split(';')
-
-            if len(headerParse) == 1:
-                chrom = headerLine.split('>')[1]
-                self.start = 1
-                stop = len(self.block)
-            else:
-                chrom = 'chrom'
-                self.start = 1
-                stop = len(self.block)
-        else:
-            chrom = self.headerVal.split(':')[0]
-            self.start = int(str(self.headerVal).split(':')[1].split('-')[0])
-            stop = str(self.headerVal).split(':')[1].split('-')[1]
-
+        chrom = headerLine.split('>')[1].strip()
+        self.start = 1
+        stop = len(self.block)
+        
         # Make lists to hold Report info if desired.
         if self.reportVal:
             self.reportList = []
@@ -696,7 +686,7 @@ class SequenceCrawler:
 
         else:
             # Create the output file.
-            output = open('%s.fastq' % outName, 'w')
+            output = open('%s.fastq' % outName, 'a')
 
             # Create a list to hold the output.
             outList = []
@@ -711,7 +701,7 @@ class SequenceCrawler:
                                                          quals[i]))
 
             # Write the output file.
-            output.write('\n'.join(outList))
+            output.write('\n'.join(outList) + '\n')
             output.close()
 
         # Print info about the results to terminal.
@@ -824,6 +814,28 @@ def runSequenceCrawler(inputFile, l, L, gcPercent, GCPercent, nn_table, tm, TM,
                          metaVal, outNameVal)
     sc.run()
 
+def split_fasta_into_contigs(inputFile):
+    with open(inputFile, 'r') as f:
+        content = f.read()
+
+    # Split the content by '>' to separate contigs
+    contigs = content.split('>')[1:]  # Ignore the first split as it's empty
+    contig_files = []
+
+    for contig in contigs:
+        lines = contig.split('\n')
+        headerLine = lines[0]
+        sequence = ''.join(lines[1:])
+
+        # Create a temporary file for each contig
+        temp_file = tempfile.NamedTemporaryFile(delete=False, mode='w', suffix='.fasta')
+        contig_files.append(temp_file.name)
+
+        with temp_file as f:
+            f.write('>{}\n'.format(headerLine))
+            f.write(sequence)
+
+    return contig_files
 
 def main():
     """Runs the crawler through the given block sequence to identify probes
@@ -975,7 +987,9 @@ def main():
     # if this code is ever hosted online.
     exec ('nn_table = mt.%s' % args.nn_table)
 
-    runSequenceCrawler(inputFile, l, L, gcPercent, GCPercent, nn_table, tm, TM,
+    contig_files = split_fasta_into_contigs(inputFile)
+    for contig_file in contig_files:
+        runSequenceCrawler(contig_file, l, L, gcPercent, GCPercent, nn_table, tm, TM,
                        X, sal, form, sp, conc1, conc2, headerVal, bedVal, 
                        OverlapModeVal, verbocity, reportVal, debugVal, metaVal,
                        outNameVal)
