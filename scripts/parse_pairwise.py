@@ -23,6 +23,7 @@ in the data frame to add alignment scores.)
 
 """
 
+import sys
 import pandas as pd
 import itertools
 
