@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
+Modified from:
+
 Created on Mon May  6 13:52:09 2019
 
 @author: hershe
@@ -30,7 +32,7 @@ rows_list = []
 # read in 4 rows at a time from the sam2pairwise output file,
 # create a dictionary from the reconstructed alignment, add it
 # to the list
-with open(snakemake.input[0]) as f:
+with open(sys.argv[1]) as f:
     for probe_ID, parent, aligns, reference in itertools.zip_longest(*[f]*4):
         # create a dictionary to store the row
         row_dict = {}
@@ -49,7 +51,7 @@ df = pd.DataFrame(rows_list, columns = ['probe_ID',
                                         'align_start'])
 
 # list comprehension to get the alignment scores from the text file
-AS_list = [line.split(':')[2].strip() for line in open(snakemake.input[1])]
+AS_list = [line.split(':')[2].strip() for line in open(sys.argv[2])]
 
 # use the list to create a column
 df['bowtie'] = AS_list
@@ -68,4 +70,4 @@ def on_target(row):
 df['on_target'] = df.apply(on_target, axis = 1)
 
 # save data frame to disk
-df.to_csv(snakemake.output[0], index_label=False)
+df.to_csv(sys.argv[3], index_label=False)
