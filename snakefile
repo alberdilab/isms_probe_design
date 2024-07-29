@@ -192,8 +192,6 @@ rule alignment_pairwise:
     resources:
         mem_gb=8,
         time=30
-    conda:
-        "envs/oligominer.yaml"
     shell:
         """
         module load samtools/1.20
@@ -215,15 +213,15 @@ rule parse_pairwise:
         mem_gb=8,
         time=30
     conda:
-        "envs/oligominer.yaml"
+        "envs/biopython.yaml"
     shell:
         """
-        python scripts/parse_pairwise.py {input.pair} {input.scores}
+        python scripts/parse_pairwise.py {input.pair} {input.scores} {output}
         """
 
 rule score_probes:
     input:
-        "pipeline/map/{target}.csv"
+        "pipeline/alignments/{target}.csv"
     output:
         "pipeline/score/{target}.tsv"
     params:
