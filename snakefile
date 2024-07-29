@@ -1,7 +1,7 @@
 ######
 # InSituMicrobeSeq probe design pipeline
-# Martí Dalmases & Antton alberdi
-# 2023/07/27
+# Martí Dalmases & Antton Alberdi
+# 2024/07/27
 # Description: draft backbone pipeline for probe design
 ######
 
@@ -202,7 +202,8 @@ rule alignment_pairwise:
 rule parse_pairwise:
     input:
         pair="pipeline/map/{target}.pair",
-        scores="pipeline/map/{target}.txt"
+        scores="pipeline/map/{target}.txt",
+        targets="pipeline/renamed/{target}.gtf"
     output:
         "pipeline/alignments/{target}.csv"
     params:
@@ -216,7 +217,7 @@ rule parse_pairwise:
         "envs/biopython.yaml"
     shell:
         """
-        python scripts/parse_pairwise.py {input.pair} {input.scores} {output}
+        python scripts/parse_pairwise.py {input.pair} {input.scores} {input.targets} {output}
         """
 
 rule score_probes:
