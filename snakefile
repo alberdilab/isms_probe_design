@@ -81,7 +81,7 @@ rule index_fasta:
     input:
         "pipeline/renamed/allgenomes.fa"
     output:
-        "pipeline/renamed/allgenomes.bt2"
+        "pipeline/renamed/allgenomes.rev.1.bt2"
     params:
         base="pipeline/renamed/allgenomes",
         jobname="allgenomes.in"
@@ -89,10 +89,9 @@ rule index_fasta:
         1
     resources:
         mem_gb=8,
-        time=30
+        time=60
     shell:
         """
-        #index fasta
         module load bowtie2/2.5.2
         bowtie2-build {input} {params.base}
         """
@@ -140,10 +139,10 @@ rule generate_probes:
     input:
         "pipeline/extract/{target}.fa"
     output:
-        base="pipeline/probes/{target}",
-        file="pipeline/probes/{target}.fastq"
+        "pipeline/probes/{target}.fastq"
     params:
         jobname="{target}.gp",
+        base="pipeline/probes/{target}",
         min_length=36,
         max_length=41,
         min_tm=42,
@@ -157,13 +156,13 @@ rule generate_probes:
         "envs/oligominer.yaml"
     shell:
         """
-        python scripts/blockParse.py  -l {params.min_length} -L {params.max_length} -t {params.min_tm} -T {params.max_tm} -f {input} -o {output.base}
+        python scripts/blockParse.py  -l {params.min_length} -L {params.max_length} -t {params.min_tm} -T {params.max_tm} -f {input} -o {params.base}
         """
 
 rule align_probes:
     input:
         fq="pipeline/probes/{target}.fastq",
-        ref="pipeline/renamed/allgenomes.bt2"
+        ref="pipeline/renamed/allgenomes.rev.1.bt2"
     output:
         "pipeline/map/{target}.sam"
     params:
@@ -175,7 +174,8 @@ rule align_probes:
         time=30
     shell:
         """
-        #aligns probes to all genomes
+        module load bowtie2/2.5.2 samtools/1.20
+        bowtie2 -x {input.ref} -q {input.fq} --threads {threads} --very-sensitive-local -k 100 | samtools sort -@ {threads} -o {output}
         """
 
 rule score_probes:
