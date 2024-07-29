@@ -195,12 +195,13 @@ rule alignment_pairwise:
         "envs/oligominer.yaml"
     shell:
         """
+        module load samtools/1.20
         samtools view {input} | sam2pairwise > {output}
         """
 
 rule score_probes:
     input:
-        "pipeline/map/{target}.bam"
+        "pipeline/map/{target}.pair"
     output:
         "pipeline/score/{target}.tsv"
     params:
