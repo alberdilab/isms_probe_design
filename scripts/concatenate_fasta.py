@@ -19,7 +19,7 @@ def concatenate_fasta(input_files, output_file):
 
 if __name__ == "__main__":
 
-    input_files = sys.argv[1]
-    output_file = sys.argv[2]
+    input_files = sys.argv[2:]
+    output_file = sys.argv[1]
 
     concatenate_fasta(input_files, output_file)
