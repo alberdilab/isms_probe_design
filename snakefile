@@ -2,24 +2,31 @@
 # InSituMicrobeSeq probe design pipeline
 # Martí Dalmases & Antton Alberdi
 # 2024/07/27
-# Description: draft backbone pipeline for probe design
+# Description: draft backbone pipeline for probe design. Optimised for slurm-based HPC computation.
+# Modified from PaintSHOP pipeline: https://github.com/beliveau-lab/PaintSHOP_pipeline
 ######
 
-# 1) Copy this snakefile to the working directory
+# 1) Clone this repository 'git clone https://github.com/alberdilab/isms_probe_design.git'
 # 2) Store the genome sequences in the folder 'genomes' in the working directory with extension .fa, and without any "." or "/" in the file name besides the extension .fa.
 # 3) Store the target-defining GTF files in the 'targets' directory with extension .gtf, and without any "." or "/" in the file name besides the extension .gtf.
-# 4) Launch the snakemake using the following code:
+# 4) Create a screen session and enter into the repository directory
+# screen -S isms_probe_design
+# cd isms_probe_design
+# 5) Launch the snakemake using the following code:
+# module purge && module load snakemake/7.20.0 mamba/1.3.1
 # snakemake -j 20 --cluster 'sbatch -o logs/{params.jobname}-slurm-%j.out --mem {resources.mem_gb}G --time {resources.time} -c {threads} --job-name={params.jobname} -v'   --use-conda --conda-frontend mamba --conda-prefix conda --latency-wait 600
+# 6) Let snakemake to manage the slurm jobs until the 
 
-#List genome and target wildcards
+# List genome and target wildcards
 genomes, = glob_wildcards("genomes/{genome}.fa")
 targets, = glob_wildcards("targets/{target}.gtf")
 
-#Expand target files
+# Expand target files
 rule all:
     input:
         expand("probes/{target}.tsv", target=targets)
 
+# Merge all input fasta files (bacterial genomes) into a single file.
 rule concatenate_fasta:
     input:
         expand("genomes/{genome}.fa", genome=genomes)
@@ -38,6 +45,7 @@ rule concatenate_fasta:
         cat {input} > {output}
         """
 
+# Create a mapping file of contig headers, with modified new headers in the case of duplications
 rule unique_headers:
     input:
         "pipeline/input/allgenomes.fa"
@@ -57,6 +65,7 @@ rule unique_headers:
         python scripts/unique_headers.py {input} {output}
         """
 
+# If necessary, modify headers to avoid duplicated identities that would affect downstream operations
 rule unique_headers_fasta:
     input:
         fasta="pipeline/input/allgenomes.fa",
@@ -77,6 +86,7 @@ rule unique_headers_fasta:
         python scripts/update_fasta_headers.py {input.fasta} {input.headers} {output}
         """
 
+# Index renamed fasta file for downstream probe mapping
 rule index_fasta:
     input:
         "pipeline/renamed/allgenomes.fa"
@@ -96,6 +106,7 @@ rule index_fasta:
         bowtie2-build {input} {params.base}
         """
 
+# Update the contig id-s in the gtf files using the header mapping file to avoid duplications.
 rule unique_ids_gtf:
     input:
         gtf="targets/{target}.gtf",
@@ -116,6 +127,7 @@ rule unique_ids_gtf:
         python scripts/update_gtf_ids.py {input.gtf} {input.headers} {output}
         """
 
+# Based on the GTF information, extract target regions from the original fasta files to design probes.
 rule extract_targets:
     input:
         fasta="pipeline/renamed/allgenomes.fa",
@@ -135,6 +147,7 @@ rule extract_targets:
         bedtools getfasta -fi {input.fasta} -bed {input.gtf} > {output}
         """
 
+# Generate the initial set of probes to be tested for suitability.
 rule generate_probes:
     input:
         "pipeline/extract/{target}.fa"
@@ -159,6 +172,7 @@ rule generate_probes:
         python scripts/blockParse.py  -l {params.min_length} -L {params.max_length} -t {params.min_tm} -T {params.max_tm} -f {input} -o {params.base}
         """
 
+# Align probes against the entire set of genomic sequences (on-targets and off-targets)
 rule align_probes:
     input:
         fq="pipeline/probes/{target}.fastq",
@@ -179,6 +193,7 @@ rule align_probes:
         bowtie2 -x {params.ref} -q {input.fq} --threads {threads} --very-sensitive-local -k 100 | samtools view -bS - > {output}
         """
 
+# Convert alignment output into pairwise file and extract alignment scores
 rule alignment_pairwise:
     input:
         "pipeline/map/{target}.bam"
@@ -201,7 +216,8 @@ rule alignment_pairwise:
         samtools view {input} | awk '{{print $12}}' > {output.scores}
         """
 
-rule parse_pairwise:
+# Use alignment information to identify on-target and off-target matches
+rule target_matches:
     input:
         pair="pipeline/map/{target}.pair",
         scores="pipeline/map/{target}.txt",
@@ -209,7 +225,7 @@ rule parse_pairwise:
     output:
         "pipeline/alignments/{target}.csv"
     params:
-        jobname="{target}.al"
+        jobname="{target}.tm"
     threads:
         1
     resources:
@@ -222,6 +238,7 @@ rule parse_pairwise:
         python scripts/parse_pairwise.py {input.pair} {input.scores} {input.targets} {output}
         """
 
+# Predict hybridisation probabilities based on machine learning models
 rule predict_duplex:
     input:
         probes="pipeline/alignments/{target}.csv",
@@ -242,6 +259,7 @@ rule predict_duplex:
         python scripts/XGB_predict.py {input.probes} {input.model} {output}
         """
 
+# Format probe scores 
 rule score_probes:
     input:
         "pipeline/predictions/{target}.csv"
