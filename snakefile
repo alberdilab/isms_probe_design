@@ -41,8 +41,7 @@ rule concatenate_fasta:
         time=30
     shell:
         """
-        #pending to add the renaming script
-        cat {input} > {output}
+        python scripts/concatenate_fasta.py {output} {input}
         """
 
 # Create a mapping file of contig headers, with modified new headers in the case of duplications
