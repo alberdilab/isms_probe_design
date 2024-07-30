@@ -222,6 +222,26 @@ rule parse_pairwise:
         python scripts/parse_pairwise.py {input.pair} {input.scores} {input.targets} {output}
         """
 
+rule predict_duplex:
+    input:
+        probes="pipeline/alignments/{target}.csv",
+        model="models/42_all_fixed_xgb.pickle.dat",
+    output:
+        "pipeline/predictions/{target}.csv"
+    params:
+        jobname="{target}.pr"
+    threads:
+        1
+    resources:
+        mem_gb=8,
+        time=30
+    conda:
+        "envs/biopython.yaml"
+    shell:
+        """
+        python scripts/XGB_predict.py {input.probes} {input.model} {output}
+        """
+
 rule score_probes:
     input:
         "pipeline/alignments/{target}.csv"
