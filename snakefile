@@ -244,7 +244,7 @@ rule predict_duplex:
 
 rule score_probes:
     input:
-        "pipeline/alignments/{target}.csv"
+        "pipeline/predictions/{target}.csv"
     output:
         "pipeline/score/{target}.tsv"
     params:
