@@ -1,10 +1,20 @@
 name: biopython_env
 channels:
-  - conda-forge
+  - beliveau-lab
   - bioconda
+  - conda-forge
   - defaults
 dependencies:
-  - python=3.11
-  - biopython=1.84
-  - pandas=2.2.2
-  - numpy=1.26.4
+  - bedtools=2.29.2
+  - biopython=1.77
+  - bowtie2=2.3.5.1
+  - jellyfish=2.2.10
+  - ncurses=6.1
+  - numpy=1.18.5
+  - pandas=1.0.5
+  - pip=20.1.1
+  - python=3.7.8
+  - python_abi=3.7
+  - sam2pairwise=1.0.0
+  - samtools=1.9
+  - xgboost=0.82
