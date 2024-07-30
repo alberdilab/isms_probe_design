@@ -246,7 +246,7 @@ rule score_probes:
     input:
         "pipeline/predictions/{target}.csv"
     output:
-        "pipeline/score/{target}.tsv"
+        "pipeline/scores/{target}.bed"
     params:
         jobname="{target}.sc"
     threads:
@@ -254,14 +254,16 @@ rule score_probes:
     resources:
         mem_gb=8,
         time=30
+    conda:
+        "envs/biopython.yaml"
     shell:
         """
-        #scores probes
+        python scripts/output_bed.py {input} {output}
         """
 
 rule filter_probes:
     input:
-        "pipeline/score/{target}.tsv"
+        "pipeline/scores/{target}.bed"
     output:
         "probes/{target}.tsv"
     params:
