@@ -113,6 +113,7 @@ class SequenceCrawler:
         # Build parser for FASTA sequence block.
         for seq_record in SeqIO.parse(self.inputFile, 'fasta'):
             self.block = str(seq_record.seq).upper()
+            self.block1 = str(seq_record.seq)
 
     def reformatTable(self, table):
         """Given a NN table of the format in Bio.SeqUtils.MeltingTemp,
@@ -683,7 +684,12 @@ class SequenceCrawler:
                 end_coord = int(chrom.split(':')[1].split('-')[1]) + int(end)
                 tm_value = self.BedprobeTm(seq)
 
-                outList.append('{}\t{}\t{}\t{}\t{}'.format(chrom_prefix, start_coord, end_coord, seq, tm_value))
+                # here is where I add softmask info for bed
+                if any(c.islower() for c in self.block1[int(start):int(end)]):
+                    outList.append('%s\t%s\t%s\t%s\t%s\t%s' % (chrom_prefix, start_coord, end_coord, seq, tm_value))
+                else:
+                    outList.append('%s\t%s\t%s\t%s\t%s\t%s' % (chrom_prefix, start_coord, end_coord, seq, tm_value))
+
 
             # Write the output file.
             output.write('\n'.join(outList))
@@ -706,8 +712,16 @@ class SequenceCrawler:
                 chrom_prefix = chrom.split(':')[0]
                 start_coord = int(chrom.split(':')[1].split('-')[0]) + int(start)
                 end_coord = int(chrom.split(':')[1].split('-')[1]) + int(end)
-            
-                outList.append('@%s:%s-%s\n%s\n+\n%s' % (chrom_prefix, start_coord, end_coord, seq,
+
+
+                # here is where I add softmask info for fastq
+                # print(self.block1[int(start):int(end)])
+                # here is where I add softmask info
+                if any(c.islower() for c in self.block1[int(start):int(end)]):
+                    outList.append('@%s:%s-%s|1\n%s\n+\n%s' % (chrom_prefix, start_coord, end_coord, seq,
+                                                         quals[i]))
+                else:
+                    outList.append('@%s:%s-%s|0\n%s\n+\n%s' % (chrom_prefix, start_coord, end_coord, seq,
                                                          quals[i]))
 
             # Write the output file.
