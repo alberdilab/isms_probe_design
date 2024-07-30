@@ -292,5 +292,5 @@ rule filter_probes:
         time=30
     shell:
         """
-        #filters probes
+        awk '$4 !~ /N/ && $4 !~ /-/' {input} > {output}
         """
