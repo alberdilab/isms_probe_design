@@ -192,6 +192,8 @@ rule alignment_pairwise:
     resources:
         mem_gb=8,
         time=30
+    conda:
+        "envs/oligominer.yaml"
     shell:
         """
         module load samtools/1.20
