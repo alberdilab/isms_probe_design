@@ -683,7 +683,7 @@ class SequenceCrawler:
                 end_coord = int(chrom.split(':')[1].split('-')[1]) + int(end)
                 tm_value = self.BedprobeTm(seq)
 
-                outList.append(f'{chrom_prefix}\t{start_coord}\t{end_coord}\t{seq}\t{tm_value}')
+                outList.append('{}\t{}\t{}\t{}\t{}'.format(chrom_prefix, start_coord, end_coord, seq, tm_value))
 
             # Write the output file.
             output.write('\n'.join(outList))
@@ -702,7 +702,12 @@ class SequenceCrawler:
 
             # Build the output file.
             for i, (start, end, seq) in enumerate(cands):
-                outList.append('@%s:%s-%s\n%s\n+\n%s' % (chrom, start, end, seq,
+
+                chrom_prefix = chrom.split(':')[0]
+                start_coord = int(chrom.split(':')[1].split('-')[0]) + int(start)
+                end_coord = int(chrom.split(':')[1].split('-')[1]) + int(end)
+            
+                outList.append('@%s:%s-%s\n%s\n+\n%s' % (chrom_prefix, start_coord, end_coord, seq,
                                                          quals[i]))
 
             # Write the output file.
