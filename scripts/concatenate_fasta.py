@@ -1,4 +1,5 @@
 import os
+import sys
 
 def concatenate_fasta(input_files, output_file):
 
