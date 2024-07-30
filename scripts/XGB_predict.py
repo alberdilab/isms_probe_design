@@ -16,6 +16,7 @@ Written to work with the results of parse_pairwise.py in a snakemake pipeline.
 
 """
 
+import sys
 import pandas as pd
 from Bio.SeqUtils import GC
 from Bio.Seq import Seq
@@ -24,7 +25,7 @@ import pickle
 
 # read in data
 # in snakemake pipeline first argument should be snakemake.input[0]
-df = pd.read_csv(snakemake.input[0])
+df = pd.read_csv(sys.argv[1])
 
 # get reverse complement of derived to mirror format of training data
 def reverse_comp(seq):
@@ -70,7 +71,7 @@ features = features[['bowtie', 'parent_gc', 'derived_gc',
                'derived_CA', 'derived_CT', 'derived_CG', 'derived_CC']]
 
 # load in pickled model
-model = pickle.load(open(snakemake.input[1], "rb"))
+model = pickle.load(open(sys.argv[2], "rb"))
 
 result = model.predict(features.values)
 
@@ -89,4 +90,4 @@ for i in range(0, len(result), 1):
 df['duplex_pred'] = result
 
 # save data frame to disk
-df.to_csv(snakemake.output[0], index_label=False)
+df.to_csv(sys.argv[3], index_label=False)
