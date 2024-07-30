@@ -68,9 +68,8 @@ with open(sys.argv[3], 'r') as t:
         targets[line.strip().split('\t')[0]] = (line.strip().split('\t')[3],line.strip().split('\t')[4])
 
 # check if the entire alignment is inside the target region
-def compare_coords(location, derived_start, derived_length) => bool:
-    if (targets[location][0] <= align_start <= targets[location][1]) & \
-        ((derived_start + derived_lenght) <= targets[location][1]):
+def compare_coords(location, derived_start, derived_length) -> bool:
+    if (targets[location][0] <= align_start <= targets[location][1]) & ((derived_start + derived_lenght) <= targets[location][1]):
         return True
     else:
         return False
@@ -78,9 +77,9 @@ def compare_coords(location, derived_start, derived_length) => bool:
 # compute whether or not the alignment is on target
 def on_target(row):
     if row['probe_ID'].split(':')[0] in targets: # is in the correct genome and contig
-            gen_con = targets[row['probe_ID'].split(':')[0]]
-            alignment_start = row['align_start']
-            alignment_length = len(row['derived'])
+        gen_con = targets[row['probe_ID'].split(':')[0]]
+        alignment_start = row['align_start']
+        alignment_length = len(row['derived'])
         if compare_coords(gen_con, alignment_start, alignment_length) == True: # is inside the target region
             return 1
         else:
