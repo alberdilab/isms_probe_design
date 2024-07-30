@@ -60,15 +60,35 @@ df['bowtie'] = AS_list
 # filter out candidates with 100 alignments
 df = df.groupby('probe_ID').filter(lambda x: len(x) < 100)
 
+# open the .GTF and extract the header and target start-end
+targets = {}
+
+with open(sys.argv[3], 'r') as t:
+    for line in t:
+        targets[line.strip().split('\t')[0]] = (line.strip().split('\t')[3],line.strip().split('\t')[4])
+
+# check if the entire alignment is inside the target region
+def compare_coords(location, derived_start, derived_length) => bool:
+    if (targets[location][0] <= align_start <= targets[location][1]) & \
+        ((derived_start + derived_lenght) <= targets[location][1]):
+        return True
+    else:
+        return False
+
 # compute whether or not the alignment is on target
 def on_target(row):
-    if (row['probe_ID'].split(':')[0] == str(row['align_chr'])) & \
-       (row['probe_ID'].split(':')[1].split('-')[0] ==  str(row['align_start'])):
-           return 1
+    if row['probe_ID'].split(':')[0] in targets: # is in the correct genome and contig
+            gen_con = targets[row['probe_ID'].split(':')[0]]
+            alignment_start = row['align_start']
+            alignment_length = len(row['derived'])
+        if compare_coords(gen_con, alignment_start, alignment_length) == True: # is inside the target region
+            return 1
+        else:
+            return 0
     else:
-           return 0
+        return 0
 
 df['on_target'] = df.apply(on_target, axis = 1)
 
 # save data frame to disk
-df.to_csv(sys.argv[3], index_label=False)
+df.to_csv(sys.argv[4], index_label=False)
