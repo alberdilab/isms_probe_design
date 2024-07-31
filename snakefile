@@ -109,7 +109,6 @@ rule index_fasta:
 # Jellyfish count renamed fasta file for downstream kmer count
 rule build_jellyfish:
     input:
-        "pipeline/02_renamed/allgenomes.fa"
     output:
         "pipeline/02_renamed/allgenomes.jf"
     conda:
@@ -324,5 +323,7 @@ rule max_kmer:
     params:
         mfree='20G',
         h_rt='3:0:0'
-    script:
-        'scripts/kmer_frequency.py'
+    shell:
+        """
+        python scripts/kmer_frequency {input.probes} {input.jellyfish} {output}
+        """
