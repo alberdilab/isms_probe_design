@@ -113,7 +113,7 @@ def run_frequency(input_bed_file, output_file, jf_file):
     df['strand'] = '+'
 
     # Sort probes on chromosomal start coordinate
-    df = df.sort_values('start')
+    df = df.sort_values(['chrom', 'start'])
 
     # Save to disk
     df.to_csv(output_file, sep='\t', index=False, header=False, float_format='%.3f')
