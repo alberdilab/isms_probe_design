@@ -38,7 +38,7 @@ df = pd.read_csv(sys.argv[1])
 # compute on target score as the duplex probability for the on target probe
 on_target_scores = df[df['on_target'] == 1] \
                         .groupby(['probe_ID', 'parent'])['duplex_pred'] \
-                        .sum().reset_index(name='on_target_score')
+                        .max().reset_index(name='on_target_score')
 
 # compute off target score as the sum of all duplex probabilities 
 # of all off target regions
