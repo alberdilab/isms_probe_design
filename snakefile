@@ -106,6 +106,22 @@ rule index_fasta:
         bowtie2-build {input} {params.base}
         """
 
+# Jellyfish count renamed fasta file for downstream kmer count
+rule build_jellyfish:
+    input:
+        "pipeline/02_renamed/allgenomes.fa"
+    output:
+        "pipeline/02_renamed/allgenomes.jf"
+    conda:
+        "envs/biopython.yaml"
+    params:
+        mfree='30G',
+        h_rt='3:0:0'
+    shell:
+        """
+        jellyfish count -m 18 -s 3300M -o {output} --out-counter-len 1 -L 2 {input}
+        """
+
 # Update the contig id-s in the gtf files using the header mapping file to avoid duplications.
 rule unique_ids_gtf:
     input:
