@@ -31,7 +31,7 @@ rule concatenate_fasta:
     input:
         expand("genomes/{genome}.fa", genome=genomes)
     output:
-        "pipeline/input/allgenomes.fa"
+        "pipeline/01_input/allgenomes.fa"
     params:
         jobname="allgenomes.pf"
     threads:
@@ -47,9 +47,9 @@ rule concatenate_fasta:
 # Create a mapping file of contig headers, with modified new headers in the case of duplications
 rule unique_headers:
     input:
-        "pipeline/input/allgenomes.fa"
+        "pipeline/01_input/allgenomes.fa"
     output:
-        "pipeline/renamed/headers.tsv"
+        "pipeline/02_renamed/headers.tsv"
     params:
         jobname="allgenomes.uh"
     threads:
@@ -67,10 +67,10 @@ rule unique_headers:
 # If necessary, modify headers to avoid duplicated identities that would affect downstream operations
 rule unique_headers_fasta:
     input:
-        fasta="pipeline/input/allgenomes.fa",
-        headers="pipeline/renamed/headers.tsv"
+        fasta="pipeline/01_input/allgenomes.fa",
+        headers="pipeline/02_renamed/headers.tsv"
     output:
-        "pipeline/renamed/allgenomes.fa"
+        "pipeline/02_renamed/allgenomes.fa"
     params:
         jobname="allgenomes.uf"
     threads:
@@ -85,23 +85,24 @@ rule unique_headers_fasta:
         python scripts/update_fasta_headers.py {input.fasta} {input.headers} {output}
         """
 
-# Index renamed fasta file for downstream probe mapping
+# Bowtie index renamed fasta file for downstream probe mapping
 rule index_fasta:
     input:
-        "pipeline/renamed/allgenomes.fa"
+        "pipeline/02_renamed/allgenomes.fa"
     output:
-        "pipeline/renamed/allgenomes.rev.1.bt2"
+        "pipeline/02_renamed/allgenomes.rev.1.bt2"
     params:
-        base="pipeline/renamed/allgenomes",
+        base="pipeline/02_renamed/allgenomes",
         jobname="allgenomes.in"
     threads:
         1
     resources:
         mem_gb=8,
         time=60
+    conda:
+        "envs/biopython.yaml"
     shell:
         """
-        module load bowtie2/2.5.2
         bowtie2-build {input} {params.base}
         """
 
@@ -109,9 +110,9 @@ rule index_fasta:
 rule unique_ids_gtf:
     input:
         gtf="targets/{target}.gtf",
-        headers="pipeline/renamed/headers.tsv"
+        headers="pipeline/02_renamed/headers.tsv"
     output:
-        "pipeline/renamed/{target}.gtf"
+        "pipeline/02_renamed/{target}.gtf"
     params:
         jobname="{target}.pg"
     threads:
@@ -129,10 +130,10 @@ rule unique_ids_gtf:
 # Based on the GTF information, extract target regions from the original fasta files to design probes.
 rule extract_targets:
     input:
-        fasta="pipeline/renamed/allgenomes.fa",
-        gtf="pipeline/renamed/{target}.gtf"
+        fasta="pipeline/02_renamed/allgenomes.fa",
+        gtf="pipeline/02_renamed/{target}.gtf"
     output:
-        "pipeline/extract/{target}.fa"
+        "pipeline/03_extract/{target}.fa"
     params:
         jobname="{target}.ex"
     threads:
@@ -149,12 +150,12 @@ rule extract_targets:
 # Generate the initial set of probes to be tested for suitability.
 rule generate_probes:
     input:
-        "pipeline/extract/{target}.fa"
+        "pipeline/03_extract/{target}.fa"
     output:
-        "pipeline/probes/{target}.fastq"
+        "pipeline/04_probes/{target}.fastq"
     params:
         jobname="{target}.gp",
-        base="pipeline/probes/{target}",
+        base="pipeline/04_probes/{target}",
         min_length=36,
         max_length=41,
         min_tm=42,
@@ -174,13 +175,13 @@ rule generate_probes:
 # Align probes against the entire set of genomic sequences (on-targets and off-targets)
 rule align_probes:
     input:
-        fq="pipeline/probes/{target}.fastq",
-        ref="pipeline/renamed/allgenomes.rev.1.bt2"
+        fq="pipeline/04_probes/{target}.fastq",
+        ref="pipeline/02_renamed/allgenomes.rev.1.bt2"
     output:
-        "pipeline/map/{target}.bam"
+        "pipeline/05_map/{target}.bam"
     params:
         jobname="{target}.mp",
-        ref="pipeline/renamed/allgenomes"
+        ref="pipeline/02_renamed/allgenomes"
     threads:
         1
     resources:
@@ -195,10 +196,10 @@ rule align_probes:
 # Convert alignment output into pairwise file and extract alignment scores
 rule alignment_pairwise:
     input:
-        "pipeline/map/{target}.bam"
+        "pipeline/05_map/{target}.bam"
     output:
-        pair="pipeline/map/{target}.pair",
-        scores="pipeline/map/{target}.txt"
+        pair="pipeline/05_map/{target}.pair",
+        scores="pipeline/05_map/{target}.txt"
     params:
         jobname="{target}.pa"
     threads:
@@ -218,11 +219,11 @@ rule alignment_pairwise:
 # Use alignment information to identify on-target and off-target matches
 rule target_matches:
     input:
-        pair="pipeline/map/{target}.pair",
-        scores="pipeline/map/{target}.txt",
-        targets="pipeline/renamed/{target}.gtf"
+        pair="pipeline/05_map/{target}.pair",
+        scores="pipeline/05_map/{target}.txt",
+        targets="pipeline/02_renamed/{target}.gtf"
     output:
-        "pipeline/alignments/{target}.csv"
+        "pipeline/06_alignments/{target}.csv"
     params:
         jobname="{target}.tm"
     threads:
@@ -240,10 +241,10 @@ rule target_matches:
 # Predict hybridisation probabilities based on machine learning models
 rule predict_duplex:
     input:
-        probes="pipeline/alignments/{target}.csv",
+        probes="pipeline/06_alignments/{target}.csv",
         model="models/42_all_fixed_xgb.pickle.dat",
     output:
-        "pipeline/predictions/{target}.csv"
+        "pipeline/07_predictions/{target}.csv"
     params:
         jobname="{target}.pr"
     threads:
@@ -261,9 +262,9 @@ rule predict_duplex:
 # Format probe scores 
 rule score_probes:
     input:
-        "pipeline/predictions/{target}.csv"
+        "pipeline/07_predictions/{target}.csv"
     output:
-        "pipeline/scores/{target}.bed"
+        "pipeline/08_scores/{target}.bed"
     params:
         jobname="{target}.sc"
     threads:
@@ -280,7 +281,7 @@ rule score_probes:
 
 rule filter_probes:
     input:
-        "pipeline/scores/{target}.bed"
+        "pipeline/08_scores/{target}.bed"
     output:
         "probes/{target}.tsv"
     params:
