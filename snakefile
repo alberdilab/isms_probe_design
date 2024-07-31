@@ -294,12 +294,12 @@ rule score_probes:
         """
         python scripts/output_bed.py {input} {output}
         """
-
+# Filter out probes
 rule filter_probes:
     input:
         "pipeline/08_scores/{target}.bed"
     output:
-        "probes/{target}.tsv"
+        "pipeline/09_kmer/{target}.tsv"
     params:
         jobname="{target}.fi"
     threads:
@@ -311,3 +311,18 @@ rule filter_probes:
         """
         awk '$4 !~ /N/ && $4 !~ /-/' {input} > {output}
         """
+
+# Count kmer frequency and hardcode strands
+rule max_kmer:
+    input:
+        probes="pipeline/09_kmer/{target}.tsv",
+        jellyfish="pipeline/02_renamed/allgenomes.jf"
+    output:
+        "probes/{target}.tsv"
+    conda:
+        'envs/biopython.yaml'
+    params:
+        mfree='20G',
+        h_rt='3:0:0'
+    script:
+        'scripts/kmer_frequency.py'
