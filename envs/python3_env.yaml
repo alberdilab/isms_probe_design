@@ -1,7 +1,7 @@
 name: python3_env
 dependencies:
-  - conda-forge::python=3.11
-  - conda-forge::python_abi=3.11
+  - conda-forge::python=3.7
+  - conda-forge::python_abi=3.7
   - conda-forge::biopython=1.77
   - conda-forge::xgboost=0.82
   - defaults::ncurses=6.1
