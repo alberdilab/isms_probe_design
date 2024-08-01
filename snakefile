@@ -103,6 +103,7 @@ rule index_fasta:
         "envs/biopython.yaml"
     shell:
         """
+        module load bowtie2/2.5.2
         bowtie2-build {input} {params.base}
         """
 
@@ -117,10 +118,11 @@ rule build_jellyfish:
     params:
         jobname="allgenomes.jf"
     resources:
-        mem_gb=8,
+        mem_gb=16,
         time=60
     shell:
         """
+        module load jellyfish/2.2.10
         jellyfish count -m 18 -s 3300M -o {output} --out-counter-len 1 -L 2 {input}
         """
 
