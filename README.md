@@ -14,7 +14,7 @@ git clone https://github.com/alberdilab/isms_probe_design.git
 4. Create and activate the isms_probe_design environment
 ```
 cd isms_probe_design
-mamba env create -f environment.yaml
+mamba env create -f environment.yaml python=3.7
 conda activate isms_probe_design_env
 ```
 
