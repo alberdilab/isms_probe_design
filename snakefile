@@ -115,8 +115,10 @@ rule build_jellyfish:
     conda:
         "envs/biopython.yaml"
     params:
-        mfree='30G',
-        h_rt='3:0:0'
+        jobname="allgenomes.jf"
+    resources:
+        mem_gb=8,
+        time=60
     shell:
         """
         jellyfish count -m 18 -s 3300M -o {output} --out-counter-len 1 -L 2 {input}
