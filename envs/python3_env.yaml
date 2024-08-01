@@ -1,4 +1,4 @@
-name: biopython_env
+name: python3_env
 channels:
   - beliveau-lab
   - bioconda
