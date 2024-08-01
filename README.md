@@ -4,9 +4,13 @@
 
 1. Install [conda](https://docs.anaconda.com/miniconda).
 2. Install [mamba](https://github.com/mamba-org/mamba) in the base environment of conda.
-  `conda install -n base -c conda-forge mamba`  
+```
+conda install -n base -c conda-forge mamba
+```
 3. Clone this repository.
-   `git clone https://github.com/alberdilab/isms_probe_design.git`
+```
+git clone https://github.com/alberdilab/isms_probe_design.git
+```
 
 ### Prepare input files
 - FASTA files (.fa) of all considered genomes must be stored in the `genomes` folder. 
