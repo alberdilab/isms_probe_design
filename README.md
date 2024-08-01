@@ -15,7 +15,7 @@ git clone https://github.com/alberdilab/isms_probe_design.git
 ```
 cd isms_probe_design
 mamba env create -f environment.yaml
-conda activate isms_probe_design
+conda activate isms_probe_design_env
 ```
 
 ### Prepare input files
@@ -26,15 +26,13 @@ The mock data files contain 3 fasta and 2 gtf files. The file `target1.gtf` cont
 
 
 ### Run pipeline locally
-On a screen session, launch the snakefile to design the probes
+On a screen session, launch the snakefile to design the probes:
 ```
 screen -S isms_probe_design
-cd isms_probe_design
-module purge && module load snakemake/7.20.0 mamba/1.3.1
+conda activate isms_probe_design_env
 snakemake \
-  -j 20 \
-  --cluster 'sbatch -o log/{params.jobname}-slurm-%j.out --mem {resources.mem_gb}G --time {resources.time} -c {threads} --job-name={params.jobname} -v' \
   --use-conda --conda-frontend mamba --conda-prefix conda \
+  --cores 4 \
   --latency-wait 600
 ```
 
