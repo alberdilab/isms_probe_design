@@ -11,6 +11,12 @@ conda install -n base -c conda-forge mamba
 ```
 git clone https://github.com/alberdilab/isms_probe_design.git
 ```
+4. Create and activate the isms_probe_design environment
+```
+cd isms_probe_design
+mamba env create -f environment.yaml
+conda activate isms_probe_design
+```
 
 ### Prepare input files
 - FASTA files (.fa) of all considered genomes must be stored in the `genomes` folder. 
