@@ -2,28 +2,34 @@
 
 ### Installation
 
-1. Install [conda](https://docs.anaconda.com/miniconda).
-2. Install [mamba](https://github.com/mamba-org/mamba) in the base environment of conda.
+1. Make sure you have [conda](https://docs.anaconda.com/miniconda) installed.
+2. Make sure you have [mamba](https://github.com/mamba-org/mamba) installed in the base environment of conda.
 ```
 conda install -n base -c conda-forge mamba
 ```
-3. Clone this repository.
+3. Clone this repository to the desired path in your local environment.
 ```
+cd [the/desired/base/path]
 git clone https://github.com/alberdilab/isms_probe_design.git
 ```
-4. Create and activate the isms_probe_design environment
+4. Create and activate the isms_probe_design environment.
 ```
 cd isms_probe_design
 mamba env create -f environment.yml
 conda activate isms_probe_design_env
 ```
 
+#### Environments
+
+- The environment file `environment.yml` contains the basal tools required to launch the snakemake pipeline.
+- The environment file `envs/python2_env.yml`, which is automatically installed by snakemake, contains python 2 dependencies required by the pipeline.
+- The environment file `envs/python3_env.yml`, which is automatically installed by snakemake, contains python 3 dependencies required by the pipeline.
+
 ### Prepare input files
 - FASTA files (.fa) of all considered genomes must be stored in the `genomes` folder. 
 - GTF files (.gtf) containing regions of target sequences must be stored in the `targets` folder.
 
 The mock data files contain 3 fasta and 2 gtf files. The file `target1.gtf` contains two regions from genome2 and genome3, while the file `target2.gtf` contains the entire genome1 as target sequence.
-
 
 ### Run pipeline locally
 Snakemake automatically runs jobs locally. On a screen session, launch the snakefile to design the probes using the following commands:
