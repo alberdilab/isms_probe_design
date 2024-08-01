@@ -109,6 +109,7 @@ rule index_fasta:
 # Jellyfish count renamed fasta file for downstream kmer count
 rule build_jellyfish:
     input:
+        "pipeline/02_renamed/allgenomes.fa"
     output:
         "pipeline/02_renamed/allgenomes.jf"
     conda:
