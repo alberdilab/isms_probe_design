@@ -1,20 +1,14 @@
 name: python3_env
-channels:
-  - beliveau-lab
-  - bioconda
-  - conda-forge
-  - defaults
 dependencies:
-  - bedtools=2.29.2
-  - biopython=1.77
-  - bowtie2=2.3.5.1
-  - jellyfish=2.2.10
-  - ncurses=6.1
-  - numpy=1.18.5
-  - pandas=1.0.5
-  - pip=20.1.1
-  - python=3.7.8
-  - python_abi=3.7
-  - sam2pairwise=1.0.0
-  - samtools=1.9
-  - xgboost=0.82
+  - conda-forge::python=3.11
+  - conda-forge::python_abi=3.11
+  - conda-forge::biopython=1.77
+  - conda-forge::xgboost=0.82
+  - defaults::ncurses=6.1
+  - defaults::numpy=1.18.5
+  - defaults::pandas=1.0.5
+  - bioconda::bedtools=2.29.2
+  - bioconda::bowtie2=2.3.5.1
+  - bioconda::samtools=1.9
+  - bioconda::jellyfish=2.2.10
+  - beliveau-lab::sam2pairwise=1.0.0
