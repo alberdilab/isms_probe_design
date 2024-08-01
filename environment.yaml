@@ -1,0 +1,7 @@
+name: isms_probe_design_env
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+dependencies:
+  - snakemake=7.20.0
