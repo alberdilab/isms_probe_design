@@ -26,7 +26,7 @@ The mock data files contain 3 fasta and 2 gtf files. The file `target1.gtf` cont
 
 
 ### Run pipeline locally
-On a screen session, launch the snakefile to design the probes:
+Snakemake automatically runs jobs locally. On a screen session, launch the snakefile to design the probes using the following commands:
 ```
 screen -S isms_probe_design
 conda activate isms_probe_design_env
@@ -36,8 +36,8 @@ snakemake \
   --latency-wait 600
 ```
 
-### Run pipeline in a high computation cluster
-On a screen session, launch the snakefile to design the probes
+### Run pipeline in a high computation cluster (using slurm)
+Snakemake automatically launches jobs to the slurm queue. On a screen session, launch the snakefile to design the probes using the following commands:
 ```
 screen -S isms_probe_design
 cd isms_probe_design
