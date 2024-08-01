@@ -39,6 +39,8 @@ rule concatenate_fasta:
     resources:
         mem_gb=8,
         time=30
+    conda:
+        "envs/python3_env.yaml"
     shell:
         """
         python scripts/concatenate_fasta.py {output} {input}
@@ -58,7 +60,7 @@ rule unique_headers:
         mem_gb=8,
         time=5
     conda:
-        "envs/biopython.yaml"
+        "envs/python3_env.yaml"
     shell:
         """
         python scripts/unique_headers.py {input} {output}
@@ -79,7 +81,7 @@ rule unique_headers_fasta:
         mem_gb=8,
         time=5
     conda:
-        "envs/biopython.yaml"
+        "envs/python3_env.yaml"
     shell:
         """
         python scripts/update_fasta_headers.py {input.fasta} {input.headers} {output}
@@ -100,10 +102,9 @@ rule index_fasta:
         mem_gb=8,
         time=60
     conda:
-        "envs/biopython.yaml"
+        "envs/python3_env.yaml"
     shell:
         """
-        module load bowtie2/2.5.2
         bowtie2-build {input} {params.base}
         """
 
@@ -120,9 +121,10 @@ rule build_jellyfish:
     resources:
         mem_gb=16,
         time=60
+    conda:
+        "envs/python3_env.yaml"
     shell:
         """
-        module load jellyfish/2.2.10
         jellyfish count -m 18 -s 3300M -o {output} --out-counter-len 1 -L 2 {input}
         """
 
@@ -141,7 +143,7 @@ rule unique_ids_gtf:
         mem_gb=8,
         time=5
     conda:
-        "envs/biopython.yaml"
+        "envs/python3_env.yaml"
     shell:
         """
         python scripts/update_gtf_ids.py {input.gtf} {input.headers} {output}
@@ -161,9 +163,10 @@ rule extract_targets:
     resources:
         mem_gb=8,
         time=30
+    conda:
+        "envs/python3_env.yaml"
     shell:
         """
-        module load bedtools/2.30.0
         bedtools getfasta -fi {input.fasta} -bed {input.gtf} > {output}
         """
 
@@ -186,7 +189,7 @@ rule generate_probes:
         mem_gb=8,
         time=30
     conda:
-        "envs/oligominer.yaml"
+        "envs/python2_env.yaml"
     shell:
         """
         python scripts/blockParse.py  -l {params.min_length} -L {params.max_length} -t {params.min_tm} -T {params.max_tm} -f {input} -o {params.base}
@@ -207,9 +210,10 @@ rule align_probes:
     resources:
         mem_gb=8,
         time=30
+    conda:
+        "envs/python3_env.yaml"
     shell:
         """
-        module load bowtie2/2.5.2 samtools/1.20
         bowtie2 -x {params.ref} -q {input.fq} --threads {threads} --very-sensitive-local -k 100 | samtools view -bS - > {output}
         """
 
@@ -228,10 +232,9 @@ rule alignment_pairwise:
         mem_gb=8,
         time=30
     conda:
-        "envs/oligominer.yaml"
+        "envs/python3_env.yaml"
     shell:
         """
-        module load samtools/1.20
         samtools view {input} | sam2pairwise > {output.pair}
         samtools view {input} | awk '{{print $12}}' > {output.scores}
         """
@@ -252,7 +255,7 @@ rule target_matches:
         mem_gb=8,
         time=30
     conda:
-        "envs/biopython.yaml"
+        "envs/python3_env.yaml"
     shell:
         """
         python scripts/parse_pairwise.py {input.pair} {input.scores} {input.targets} {output}
@@ -273,7 +276,7 @@ rule predict_duplex:
         mem_gb=8,
         time=30
     conda:
-        "envs/biopython.yaml"
+        "envs/python3_env.yaml"
     shell:
         """
         python scripts/XGB_predict.py {input.probes} {input.model} {output}
@@ -293,7 +296,7 @@ rule score_probes:
         mem_gb=8,
         time=30
     conda:
-        "envs/biopython.yaml"
+        "envs/python3_env.yaml"
     shell:
         """
         python scripts/output_bed.py {input} {output}
@@ -311,6 +314,8 @@ rule filter_probes:
     resources:
         mem_gb=8,
         time=30
+    conda:
+        "envs/python3_env.yaml"
     shell:
         """
         awk '$4 !~ /N/ && $4 !~ /-/' {input} > {output}
@@ -323,11 +328,13 @@ rule max_kmer:
         jellyfish="pipeline/02_renamed/allgenomes.jf"
     output:
         "probes/{target}.tsv"
-    conda:
-        'envs/biopython.yaml'
     params:
-        mfree='20G',
-        h_rt='3:0:0'
+        jobname="{target}.kf"
+    resources:
+        mem_gb=8,
+        time=30
+    conda:
+        "envs/python3_env.yaml"
     shell:
         """
         python scripts/kmer_frequency {input.probes} {input.jellyfish} {output}
