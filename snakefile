@@ -335,5 +335,5 @@ rule max_kmer:
         "envs/python3_env.yml"
     shell:
         """
-        python scripts/kmer_frequency {input.probes} {input.jellyfish} {output}
+        python scripts/kmer_frequency.py {input.probes} {input.jellyfish} {output}
         """
