@@ -1,11 +1,5 @@
 name: python2_env
-channels:
-  - beliveau-lab
-  - bioconda
-  - conda-forge
-  - defaults
 dependencies:
-  - python=2.7.16
-  - biopython=1.74
-  - pip=19.2.3
-  - sam2pairwise=1.0.0
+  - conda-forge::python=2.7.16
+  - conda-forge::biopython=1.74
+  - beliveau-lab::sam2pairwise=1.0.0
