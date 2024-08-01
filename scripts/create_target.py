@@ -59,7 +59,7 @@ def process_genome_mode(fasta_file, output_file):
             gtf.write(gtf_entry)
 
 def main():
-    parser = argparse.ArgumentParser(description="Filter GTF files or process genome based on mode",
+    parser = argparse.ArgumentParser(description="Filter GTF files or process whole genome FASTA",
                                      formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('-m', '--mode', choices=['region', 'genome'], required=True,
                         help='Mode of operation: \n'
