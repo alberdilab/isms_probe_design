@@ -114,8 +114,6 @@ rule build_jellyfish:
         "pipeline/02_renamed/allgenomes.fa"
     output:
         "pipeline/02_renamed/allgenomes.jf"
-    conda:
-        "envs/biopython.yaml"
     params:
         jobname="allgenomes.jf"
     resources:
