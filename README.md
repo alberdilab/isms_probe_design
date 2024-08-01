@@ -34,11 +34,11 @@ usage: scripts/create_target.py [-h] -m {region,genome} [-g GTF [GTF ...]] [-a A
 1. Choose mode:
      - -m / --mode: `region` for function detection (GTF) or `genome` for taxonomic detection (FASTA). Mandatory.
   + Region:
-     - -g / --gtf: List the input GTF files or the folder containing them. Mandatory.
-     - -a / --annotation: Single attribute for filtering. Mandatory.
+     - -g / --gtf: List the input GTF files or the folder containing them.
+     - -a / --annotation: Single attribute for filtering.
      - -e / --exon: Filter for exon only regions. Optional.
   + Genome:
-     - -f / --fasta: Input FASTA file with the desired genom target. Mandatory.
+     - -f / --fasta: Input FASTA file with the desired genom target.
 2. Output:
      - -o/--output: File path to the output file in `./targets/{target}.gtf`. Mandatory
 ### Prepare input files
