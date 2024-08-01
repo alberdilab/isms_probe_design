@@ -1,4 +1,4 @@
-name: oligominer_env
+name: python2_env
 channels:
   - beliveau-lab
   - bioconda
