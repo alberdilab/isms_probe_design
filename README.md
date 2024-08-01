@@ -21,10 +21,26 @@ conda activate isms_probe_design_env
 
 #### Environments
 
-- The environment file `environment.yml` contains the basal tools required to launch the snakemake pipeline.
+- The environment file `environment.yml` contains the basal tools required to launch the snakemake pipeline and target creator.
 - The environment file `envs/python2_env.yml`, which is automatically installed by snakemake, contains python 2 dependencies required by the pipeline.
 - The environment file `envs/python3_env.yml`, which is automatically installed by snakemake, contains python 3 dependencies required by the pipeline.
 
+### Create targets
+
+The provided script `create_target.py` allows for target extraction from FASTA and GTF files. 
+```
+usage: scripts/create_target.py [-h] -m {region,genome} [-g GTF [GTF ...]] [-a ANNOTATION] [-e] [-f FASTA] -o OUTPUT
+```
+1. Choose mode:
+     - -m / --mode: `region` for function detection (GTF) or `genome` for taxonomic detection (FASTA). Mandatory.
+  + Region:
+     - -g / --gtf: List the input GTF files or the folder containing them. Mandatory.
+     - -a / --annotation: Single attribute for filtering. Mandatory.
+     - -e / --exon: Filter for exon only regions. Optional.
+  + Genome:
+     - -f / --fasta: Input FASTA file with the desired genom target. Mandatory.
+2. Output:
+     - -o/--output: File path to the output file in `./targets/{target}.gtf`. Mandatory
 ### Prepare input files
 - FASTA files (.fa) of all considered genomes must be stored in the `genomes` folder. 
 - GTF files (.gtf) containing regions of target sequences must be stored in the `targets` folder.
