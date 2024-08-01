@@ -27,11 +27,12 @@ conda activate isms_probe_design_env
 
 ### Create targets
 
-The provided script create_target.py allows for target extraction from FASTA and GTF files. 
+The provided script `create_target.py` allows for target extraction from FASTA and GTF files. 
 ```
 usage: scripts/create_target.py [-h] -m {region,genome} [-g GTF [GTF ...]] [-a ANNOTATION] [-e] [-f FASTA] -o OUTPUT
 ```
-1. Choose mode: region (GTF) or genome (FASTA).
+1. Choose mode:
+     - -m / --mode: `region` for function detection (GTF) or `genome` for taxonomic detection (FASTA). Mandatory.
   + Region:
      - -g / --gtf: List the input GTF files or the folder containing them. Mandatory.
      - -a / --annotation: Single attribute for filtering. Mandatory.
@@ -39,7 +40,7 @@ usage: scripts/create_target.py [-h] -m {region,genome} [-g GTF [GTF ...]] [-a A
   + Genome:
      - -f / --fasta: Input FASTA file with the desired genom target. Mandatory.
 2. Output:
-     - -o/--output: File path to the output file in ./targets/...
+     - -o/--output: File path to the output file in `./targets/{target}.gtf`. Mandatory
 ### Prepare input files
 - FASTA files (.fa) of all considered genomes must be stored in the `genomes` folder. 
 - GTF files (.gtf) containing regions of target sequences must be stored in the `targets` folder.
