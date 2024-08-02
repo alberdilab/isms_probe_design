@@ -48,7 +48,9 @@ python scripts/create_target.py [-h] -m {region,genome} [-g GTF [GTF ...]] [-a A
 Create a GTF file targetting the entire genome of ***Escherichia coli***.
 ```
 conda activate isms_probe_design_env
-python scripts/create_target.py -m genome -f GCF_000005845.2_ASM584v2_genomic.fna -o targets/escherichia_coli.gtf
+python scripts/create_target.py -m genome \
+     -f GCF_000005845.2_ASM584v2_genomic.fna \
+     -o targets/escherichia_coli.gtf
 ```
 
 #### Region target example
