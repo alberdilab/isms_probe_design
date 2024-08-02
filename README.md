@@ -1,4 +1,5 @@
 # InSituMicrobeSeq probe design pipeline
+ISMS Probe Design is a bioinformatic pipeline to design probes for in-situ sequencing. The software is based on the [PaintSHOP](https://github.com/beliveau-lab/PaintSHOP_pipeline) pipeline to design oligonucleotides for FISH experiments, and relies on [OligoMiner](https://github.com/beliveau-lab/OligoMiner) for candidate probe identification. It is implemented in [Snakemake](https://snakemake.readthedocs.io/en/stable/) and provided as a standalone repository with all dependencies handled through [conda](https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html) environments. The pipeline can be run both locally (suitable for small experiments) or in a remote server (suitable for large experiments) with slurm integration.
 
 ### Installation
 
