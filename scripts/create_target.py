@@ -20,7 +20,7 @@ def filter_gtf(df, annotation, exon_only):
     # filters the df based on the annotation and exon flags
     filtered_df = df[df['attribute'].str.contains(annotation)]
     if exon_only:
-        filtered_df = filtered_df[filtered_df['feature'] == 'exon']
+        filtered_df = filtered_df.query("feature == 'exon'")
     return filtered_df
 
 def process_region_mode(gtf_files, annotation, exon_only, output_file):
