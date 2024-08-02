@@ -30,7 +30,8 @@ conda activate isms_probe_design_env
 The probe design pipeline requires target regions to be defined using GTF annotation files that reference genomic regions in the considered FASTA files. These target regions can represent entire genomes for the detection of specific taxa or span specific regions across multiple taxa for the detection of specific functions. To streamline the creation of GTF target files, we provide the script create_target.py, which enables the extraction of target regions from FASTA and GTF files.
 
 ```
-usage: scripts/create_target.py [-h] -m {region,genome} [-g GTF [GTF ...]] [-a ANNOTATION] [-e] [-f FASTA] -o OUTPUT
+conda activate isms_probe_design_env
+python scripts/create_target.py [-h] -m {region,genome} [-g GTF [GTF ...]] [-a ANNOTATION] [-e] [-f FASTA] -o OUTPUT
 ```
 1. Choose mode:
      - -m / --mode: `region` for function detection (GTF) or `genome` for taxonomic detection (FASTA). Mandatory.
@@ -42,6 +43,22 @@ usage: scripts/create_target.py [-h] -m {region,genome} [-g GTF [GTF ...]] [-a A
      - -f / --fasta: Input FASTA file with the desired genom target.
 2. Output:
      - -o/--output: File path to the output file in `./targets/{target}.gtf`. Mandatory
+   
+#### Genome target example
+```
+conda activate isms_probe_design_env
+python scripts/create_target.py -m genome -f GCF_000005845.2_ASM584v2_genomic.fna -o targets/escherichia_coli.gtf
+```
+
+#### Region target example
+```
+conda activate isms_probe_design_env
+python scripts/create_target.py -m region \
+     -g GCF_000005845.2_ASM584v2_genomic.gtf,GCF_000006765.1_ASM676v1_genomic.gtf,GCF_000009045.1_ASM904v1_genomic.gtf \
+     -a speE \
+     -o targets/speE.gtf
+```
+
 
 ### Prepare input files
 Once the reference FASTA files and GTF target files are ready, these need to be stored in specific directories.
