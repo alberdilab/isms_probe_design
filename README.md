@@ -25,9 +25,10 @@ conda activate isms_probe_design_env
 - The environment file `envs/python2_env.yml`, which is automatically installed by snakemake, contains python 2 dependencies required by the pipeline.
 - The environment file `envs/python3_env.yml`, which is automatically installed by snakemake, contains python 3 dependencies required by the pipeline.
 
-### Create targets
+### Define targets
 
-The provided script `create_target.py` allows for target extraction from FASTA and GTF files. 
+The probe design pipeline requires target regions to be defined using GTF annotation files that reference genomic regions in the considered FASTA files. These target regions can represent entire genomes for the detection of specific taxa or span specific regions across multiple taxa for the detection of specific functions. To streamline the creation of GTF target files, we provide the script create_target.py, which enables the extraction of target regions from FASTA and GTF files.
+
 ```
 usage: scripts/create_target.py [-h] -m {region,genome} [-g GTF [GTF ...]] [-a ANNOTATION] [-e] [-f FASTA] -o OUTPUT
 ```
@@ -41,7 +42,10 @@ usage: scripts/create_target.py [-h] -m {region,genome} [-g GTF [GTF ...]] [-a A
      - -f / --fasta: Input FASTA file with the desired genom target.
 2. Output:
      - -o/--output: File path to the output file in `./targets/{target}.gtf`. Mandatory
+
 ### Prepare input files
+Once the reference FASTA files and GTF target files are ready, these need to be stored in specific directories.
+
 - FASTA files (.fa) of all considered genomes must be stored in the `genomes` folder. 
 - GTF files (.gtf) containing regions of target sequences must be stored in the `targets` folder.
 
