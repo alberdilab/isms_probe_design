@@ -45,12 +45,14 @@ python scripts/create_target.py [-h] -m {region,genome} [-g GTF [GTF ...]] [-a A
      - -o/--output: File path to the output file in `./targets/{target}.gtf`. Mandatory
    
 #### Genome target example
+Create a GTF file targetting the entire genome of ***Escherichia coli***.
 ```
 conda activate isms_probe_design_env
 python scripts/create_target.py -m genome -f GCF_000005845.2_ASM584v2_genomic.fna -o targets/escherichia_coli.gtf
 ```
 
 #### Region target example
+Create a GTF file targetting the gene speE within the genomes of ***Escherichia coli***, ***Pseudomonas aeruginosa*** and ***Bacillus subtilis***.
 ```
 conda activate isms_probe_design_env
 python scripts/create_target.py -m region \
@@ -58,7 +60,6 @@ python scripts/create_target.py -m region \
      -a speE \
      -o targets/speE.gtf
 ```
-
 
 ### Prepare input files
 Once the reference FASTA files and GTF target files are ready, these need to be stored in specific directories.
