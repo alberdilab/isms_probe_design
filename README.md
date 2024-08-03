@@ -27,9 +27,9 @@ conda activate isms_probe_design_env
 
 #### Environments
 
-- The environment file `environment.yml` contains the basal tools required to launch the snakemake pipeline and target creator.
-- The environment file `envs/python2_env.yml`, which is automatically installed by snakemake, contains python 2 dependencies required by the pipeline.
-- The environment file `envs/python3_env.yml`, which is automatically installed by snakemake, contains python 3 dependencies required by the pipeline.
+- The environment file `workflow/envs/environment.yml` contains the basal tools required to launch the snakemake pipeline and target creator.
+- The environment file `workflow/envs/python2_env.yml`, which is automatically installed by snakemake, contains python 2 dependencies required by the pipeline.
+- The environment file `workflow/envs/python3_env.yml`, which is automatically installed by snakemake, contains python 3 dependencies required by the pipeline.
 
 ## Workflow
 
