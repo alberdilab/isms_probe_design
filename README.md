@@ -1,7 +1,7 @@
 # InSituMicrobeSeq probe design pipeline
 ISMS Probe Design is a bioinformatic pipeline to design probes for in-situ sequencing. The software is based on the [PaintSHOP](https://github.com/beliveau-lab/PaintSHOP_pipeline) pipeline to design oligonucleotides for FISH experiments, and relies on [OligoMiner](https://github.com/beliveau-lab/OligoMiner) for candidate probe identification. It is implemented in [Snakemake](https://snakemake.readthedocs.io/en/stable/) and provided as a standalone repository with all dependencies handled through [conda](https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html) environments. The pipeline can be run both locally (suitable for small experiments) or in a remote server (suitable for large experiments) with slurm integration.
 
-### Installation
+## Installation
 
 1. Make sure you have [conda](https://docs.anaconda.com/miniconda) installed.
 2. Make sure you have [mamba](https://github.com/mamba-org/mamba) installed in the base environment of conda.
@@ -32,7 +32,7 @@ The probe design pipeline requires target regions to be defined using GTF annota
 
 ```
 conda activate isms_probe_design_env
-python scripts/create_target.py [-h] -m {region,genome} [-g GTF [GTF ...]] [-a ANNOTATION] [-e] [-f FASTA] -o OUTPUT
+python workflow/scripts/create_target.py [-h] -m {region,genome} [-g GTF [GTF ...]] [-a ANNOTATION] [-e] [-f FASTA] -o OUTPUT
 ```
 1. Choose mode:
      - -m / --mode: `region` for function detection (GTF) or `genome` for taxonomic detection (FASTA). Mandatory.
@@ -49,7 +49,7 @@ python scripts/create_target.py [-h] -m {region,genome} [-g GTF [GTF ...]] [-a A
 Create a GTF file targetting the entire genome of ***Escherichia coli***.
 ```
 conda activate isms_probe_design_env
-python scripts/create_target.py -m genome \
+python workflow/scripts/create_target.py -m genome \
      -f GCF_000005845.2_ASM584v2_genomic.fna \
      -o targets/escherichia_coli.gtf
 ```
@@ -95,3 +95,65 @@ snakemake \
   --use-conda --conda-frontend mamba --conda-prefix conda \
   --latency-wait 600
 ```
+
+## Tutorial
+
+### 1. Get genome data from NCBI
+
+```
+mkdir resources/data
+cd resources/data
+
+# Get genome data of Stenotrophomonas rhizophila
+wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/661/955/GCF_000661955.1_ASM66195v1/GCF_000661955.1_ASM66195v1_genomic.fna.gz
+wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/661/955/GCF_000661955.1_ASM66195v1/GCF_000661955.1_ASM66195v1_genomic.gtf.gz
+
+# Get genome data of Microbacterium oxydans
+wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/006/540/085/GCF_006540085.1_ASM654008v1/GCF_006540085.1_ASM654008v1_genomic.fna.gz
+wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/006/540/085/GCF_006540085.1_ASM654008v1/GCF_006540085.1_ASM654008v1_genomic.gtf.gz
+
+# Get genome data of Xanthomonas retroflexus
+https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/900/143/175/GCF_900143175.1_ASM90014317v1/GCF_900143175.1_ASM90014317v1_genomic.fna.gz
+https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/900/143/175/GCF_900143175.1_ASM90014317v1/GCF_900143175.1_ASM90014317v1_genomic.gtf.gz
+
+# Get genome data of Paenibacillus amylolyticus
+https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/029/542/105/GCF_029542105.1_ASM2954210v1/GCF_029542105.1_ASM2954210v1_genomic.fna.gz
+https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/029/542/105/GCF_029542105.1_ASM2954210v1/GCF_029542105.1_ASM2954210v1_genomic.gtf.gz
+
+# Decompress all files
+gunzip *
+cd ../..
+```
+
+### 2. Prepare target GTFs
+
+#### 2.1 Genome-level targets
+
+```
+conda activate isms_probe_design_env
+
+# Create targets of Stenotrophomonas rhizophila
+python workflow/scripts/create_target.py -m genome \
+     -f resources/data/GCF_000661955.1_ASM66195v1_genomic.fna \
+     -o resources/targets/stenotrophomonas_rhizophila.gtf
+
+# Create targets of Microbacterium oxydans
+python workflow/scripts/create_target.py -m genome \
+     -f resources/data/GCF_006540085.1_ASM654008v1_genomic.fna \
+     -o resources/targets/microbacterium_oxydans.gtf
+
+# Create targets of Xanthomonas retroflexus
+python workflow/scripts/create_target.py -m genome \
+     -f resources/data/GCF_900143175.1_ASM90014317v1_genomic.fna \
+     -o resources/targets/xanthomonas_retroflexus.gtf
+
+# Create targets of Paenibacillus amylolyticus
+python workflow/scripts/create_target.py -m genome \
+     -f resources/data/GCF_029542105.1_ASM2954210v1_genomic.fna \
+     -o resources/targets/paenibacillus_amylolyticus.gtf
+```
+
+#### 2.2 Region-level targets
+
+
+### 3. Run probe design
