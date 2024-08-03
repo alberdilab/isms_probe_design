@@ -144,12 +144,12 @@ wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/006/540/085/GCF_006540085.1_AS
 wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/006/540/085/GCF_006540085.1_ASM654008v1/GCF_006540085.1_ASM654008v1_genomic.gtf.gz
 
 # Get genome data of Xanthomonas retroflexus
-https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/900/143/175/GCF_900143175.1_ASM90014317v1/GCF_900143175.1_ASM90014317v1_genomic.fna.gz
-https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/900/143/175/GCF_900143175.1_ASM90014317v1/GCF_900143175.1_ASM90014317v1_genomic.gtf.gz
+wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/900/143/175/GCF_900143175.1_ASM90014317v1/GCF_900143175.1_ASM90014317v1_genomic.fna.gz
+wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/900/143/175/GCF_900143175.1_ASM90014317v1/GCF_900143175.1_ASM90014317v1_genomic.gtf.gz
 
 # Get genome data of Paenibacillus amylolyticus
-https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/029/542/105/GCF_029542105.1_ASM2954210v1/GCF_029542105.1_ASM2954210v1_genomic.fna.gz
-https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/029/542/105/GCF_029542105.1_ASM2954210v1/GCF_029542105.1_ASM2954210v1_genomic.gtf.gz
+wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/029/542/105/GCF_029542105.1_ASM2954210v1/GCF_029542105.1_ASM2954210v1_genomic.fna.gz
+wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/029/542/105/GCF_029542105.1_ASM2954210v1/GCF_029542105.1_ASM2954210v1_genomic.gtf.gz
 ```
 
 Decompress all files to get them ready for target GTF generation.
