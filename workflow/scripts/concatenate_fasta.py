@@ -4,7 +4,7 @@ import sys
 def concatenate_fasta(input_files, output_file):
 
     # filter for .fa files
-    fasta_files = [f for f in input_files if f.endswith('.fa')]
+    fasta_files = [f for f in input_files if f.endswith('.fna')]
 
     # raise an error if there are no .fa files
     if not fasta_files:
