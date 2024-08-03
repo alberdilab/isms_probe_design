@@ -41,7 +41,6 @@ python workflow/scripts/create_target.py [-h] -m {region,genome} [-g GTF [GTF ..
   + Region:
      - -g / --gtf: List the input GTF files or the folder containing them.
      - -a / --annotation: Single attribute for filtering.
-     - -e / --exon: Filter for exon only regions. Optional.
   + Genome:
      - -f / --fasta: Input FASTA file with the desired genom target.
 2. Output:
@@ -61,7 +60,7 @@ Create a GTF file targetting the gene speE within the genomes of ***Escherichia 
 ```
 conda activate isms_probe_design_env
 python scripts/create_target.py -m region \
-     -g GCF_000005845.2_ASM584v2_genomic.gtf,GCF_000006765.1_ASM676v1_genomic.gtf,GCF_000009045.1_ASM904v1_genomic.gtf \
+     -g GTF_directory \
      -a speE \
      -o targets/speE.gtf
 ```
