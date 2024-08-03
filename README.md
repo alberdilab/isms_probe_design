@@ -21,7 +21,7 @@ git clone https://github.com/alberdilab/isms_probe_design.git
 4. Create and activate the isms_probe_design environment.
 ```
 cd isms_probe_design
-mamba env create -f environment.yml
+mamba env create -f workflow/envs/environment.yml
 conda activate isms_probe_design_env
 ```
 
