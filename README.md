@@ -196,6 +196,8 @@ python workflow/scripts/create_target.py -m genome \
      -o resources/targets/paenibacillus_amylolyticus.gtf
 ```
 
+Note the script generated single-row GTF files for ***Stenotrophomonas rhizophila*** and ***Paenibacillus amylolyticus***, while multi-row GTF files were generated for ***Microbacterium oxydans*** and ***Xanthomonas retroflexus***. This is because the first two are circularised genomes with a single contig, while the last two are draft genomes with multiple contigs. 
+
 #### 2.2 Region-level targets
 
 Using the `create_target.py` script, create target files to design probes to detect specific regions across genomes. The script parses the annotation identifier and generates the targets GTF file with genomic region information from all candidate genome files.
