@@ -115,6 +115,10 @@ The final probe set file has the following structure:
 | genome1_contig4 | 6770 | 13645 | TGGCCCTTCACCTTTTCAGATGAACCGTAAGCGCTG | 45.900 | 99.077 | 0.000 | 0 | 0 | + |
 (...)
 
+- The first three columns define the target region.
+- The fourth column is the sequence of the probe.
+- The final six columns contain attributes of the probe.
+
 ## Tutorial
 
 In this small tutorial four bacterial genomes available at NCBI are used to showcase the design of probes targeting entire genomes and specific genomic regions.
