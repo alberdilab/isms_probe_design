@@ -15,23 +15,23 @@
 # 5) Launch the snakemake using the following code:
 # module purge && module load snakemake/7.20.0 mamba/1.3.1
 # snakemake -j 20 --cluster 'sbatch -o logs/{params.jobname}-slurm-%j.out --mem {resources.mem_gb}G --time {resources.time} -c {threads} --job-name={params.jobname} -v'   --use-conda --conda-frontend mamba --conda-prefix conda --latency-wait 600
-# 6) Let snakemake to manage the slurm jobs until the 
+# 6) Let snakemake to manage the slurm jobs until the
 
 # List genome and target wildcards
-genomes, = glob_wildcards("genomes/{genome}.fa")
-targets, = glob_wildcards("targets/{target}.gtf")
+genomes, = glob_wildcards("resources/genomes/{genome}.fa")
+targets, = glob_wildcards("resources/targets/{target}.gtf")
 
 # Expand target files
 rule all:
     input:
-        expand("probes/{target}.tsv", target=targets)
+        expand("results/probes/{target}.tsv", target=targets)
 
 # Merge all input fasta files (bacterial genomes) into a single file.
 rule concatenate_fasta:
     input:
-        expand("genomes/{genome}.fa", genome=genomes)
+        expand("resources/genomes/{genome}.fa", genome=genomes)
     output:
-        "pipeline/01_input/allgenomes.fa"
+        "results/pipeline/01_input/allgenomes.fa"
     params:
         jobname="allgenomes.pf"
     threads:
@@ -40,18 +40,18 @@ rule concatenate_fasta:
         mem_gb=8,
         time=30
     conda:
-        "envs/python3_env.yml"
+        "workflow/envs/python3_env.yml"
     shell:
         """
-        python scripts/concatenate_fasta.py {output} {input}
+        python workflow/scripts/concatenate_fasta.py {output} {input}
         """
 
 # Create a mapping file of contig headers, with modified new headers in the case of duplications
 rule unique_headers:
     input:
-        "pipeline/01_input/allgenomes.fa"
+        "results/pipeline/01_input/allgenomes.fa"
     output:
-        "pipeline/02_renamed/headers.tsv"
+        "results/pipeline/02_renamed/headers.tsv"
     params:
         jobname="allgenomes.uh"
     threads:
@@ -60,19 +60,19 @@ rule unique_headers:
         mem_gb=8,
         time=5
     conda:
-        "envs/python3_env.yml"
+        "workflow/envs/python3_env.yml"
     shell:
         """
-        python scripts/unique_headers.py {input} {output}
+        python workflow/scripts/unique_headers.py {input} {output}
         """
 
 # If necessary, modify headers to avoid duplicated identities that would affect downstream operations
 rule unique_headers_fasta:
     input:
-        fasta="pipeline/01_input/allgenomes.fa",
-        headers="pipeline/02_renamed/headers.tsv"
+        fasta="results/pipeline/01_input/allgenomes.fa",
+        headers="results/pipeline/02_renamed/headers.tsv"
     output:
-        "pipeline/02_renamed/allgenomes.fa"
+        "results/pipeline/02_renamed/allgenomes.fa"
     params:
         jobname="allgenomes.uf"
     threads:
@@ -81,20 +81,20 @@ rule unique_headers_fasta:
         mem_gb=8,
         time=5
     conda:
-        "envs/python3_env.yml"
+        "workflow/envs/python3_env.yml"
     shell:
         """
-        python scripts/update_fasta_headers.py {input.fasta} {input.headers} {output}
+        python workflow/scripts/update_fasta_headers.py {input.fasta} {input.headers} {output}
         """
 
 # Bowtie index renamed fasta file for downstream probe mapping
 rule index_fasta:
     input:
-        "pipeline/02_renamed/allgenomes.fa"
+        "results/pipeline/02_renamed/allgenomes.fa"
     output:
-        "pipeline/02_renamed/allgenomes.rev.1.bt2"
+        "results/pipeline/02_renamed/allgenomes.rev.1.bt2"
     params:
-        base="pipeline/02_renamed/allgenomes",
+        base="results/pipeline/02_renamed/allgenomes",
         jobname="allgenomes.in"
     threads:
         1
@@ -102,7 +102,7 @@ rule index_fasta:
         mem_gb=8,
         time=60
     conda:
-        "envs/python3_env.yml"
+        "workflow/envs/python3_env.yml"
     shell:
         """
         bowtie2-build {input} {params.base}
@@ -111,16 +111,16 @@ rule index_fasta:
 # Jellyfish count renamed fasta file for downstream kmer count
 rule build_jellyfish:
     input:
-        "pipeline/02_renamed/allgenomes.fa"
+        "results/pipeline/02_renamed/allgenomes.fa"
     output:
-        "pipeline/02_renamed/allgenomes.jf"
+        "results/pipeline/02_renamed/allgenomes.jf"
     params:
         jobname="allgenomes.jf"
     resources:
         mem_gb=16,
         time=60
     conda:
-        "envs/python3_env.yml"
+        "workflow/envs/python3_env.yml"
     shell:
         """
         jellyfish count -m 18 -s 3300M -o {output} --out-counter-len 1 -L 2 {input}
@@ -129,10 +129,10 @@ rule build_jellyfish:
 # Update the contig id-s in the gtf files using the header mapping file to avoid duplications.
 rule unique_ids_gtf:
     input:
-        gtf="targets/{target}.gtf",
-        headers="pipeline/02_renamed/headers.tsv"
+        gtf="resources/targets/{target}.gtf",
+        headers="results/pipeline/02_renamed/headers.tsv"
     output:
-        "pipeline/02_renamed/{target}.gtf"
+        "results/pipeline/02_renamed/{target}.gtf"
     params:
         jobname="{target}.pg"
     threads:
@@ -141,19 +141,19 @@ rule unique_ids_gtf:
         mem_gb=8,
         time=5
     conda:
-        "envs/python3_env.yml"
+        "workflow/envs/python3_env.yml"
     shell:
         """
-        python scripts/update_gtf_ids.py {input.gtf} {input.headers} {output}
+        python workflow/scripts/update_gtf_ids.py {input.gtf} {input.headers} {output}
         """
 
 # Based on the GTF information, extract target regions from the original fasta files to design probes.
 rule extract_targets:
     input:
-        fasta="pipeline/02_renamed/allgenomes.fa",
-        gtf="pipeline/02_renamed/{target}.gtf"
+        fasta="results/pipeline/02_renamed/allgenomes.fa",
+        gtf="results/pipeline/02_renamed/{target}.gtf"
     output:
-        "pipeline/03_extract/{target}.fa"
+        "results/pipeline/03_extract/{target}.fa"
     params:
         jobname="{target}.ex"
     threads:
@@ -162,7 +162,7 @@ rule extract_targets:
         mem_gb=8,
         time=30
     conda:
-        "envs/python3_env.yml"
+        "workflow/envs/python3_env.yml"
     shell:
         """
         bedtools getfasta -fi {input.fasta} -bed {input.gtf} > {output}
@@ -171,12 +171,12 @@ rule extract_targets:
 # Generate the initial set of probes to be tested for suitability.
 rule generate_probes:
     input:
-        "pipeline/03_extract/{target}.fa"
+        "results/pipeline/03_extract/{target}.fa"
     output:
-        "pipeline/04_probes/{target}.fastq"
+        "results/pipeline/04_probes/{target}.fastq"
     params:
         jobname="{target}.gp",
-        base="pipeline/04_probes/{target}",
+        base="results/pipeline/04_probes/{target}",
         min_length=36,
         max_length=41,
         min_tm=42,
@@ -187,29 +187,29 @@ rule generate_probes:
         mem_gb=8,
         time=30
     conda:
-        "envs/python2_env.yml"
+        "workflow/envs/python2_env.yml"
     shell:
         """
-        python scripts/blockParse.py  -l {params.min_length} -L {params.max_length} -t {params.min_tm} -T {params.max_tm} -f {input} -o {params.base}
+        python workflow/scripts/blockParse.py  -l {params.min_length} -L {params.max_length} -t {params.min_tm} -T {params.max_tm} -f {input} -o {params.base}
         """
 
 # Align probes against the entire set of genomic sequences (on-targets and off-targets)
 rule align_probes:
     input:
-        fq="pipeline/04_probes/{target}.fastq",
-        ref="pipeline/02_renamed/allgenomes.rev.1.bt2"
+        fq="results/pipeline/04_probes/{target}.fastq",
+        ref="results/pipeline/02_renamed/allgenomes.rev.1.bt2"
     output:
-        "pipeline/05_map/{target}.bam"
+        "results/pipeline/05_map/{target}.bam"
     params:
         jobname="{target}.mp",
-        ref="pipeline/02_renamed/allgenomes"
+        ref="results/pipeline/02_renamed/allgenomes"
     threads:
         1
     resources:
         mem_gb=8,
         time=30
     conda:
-        "envs/python3_env.yml"
+        "workflow/envs/python3_env.yml"
     shell:
         """
         bowtie2 -x {params.ref} -q {input.fq} --threads {threads} --very-sensitive-local -k 100 | samtools view -bS - > {output}
@@ -218,10 +218,10 @@ rule align_probes:
 # Convert alignment output into pairwise file and extract alignment scores
 rule alignment_pairwise:
     input:
-        "pipeline/05_map/{target}.bam"
+        "results/pipeline/05_map/{target}.bam"
     output:
-        pair="pipeline/05_map/{target}.pair",
-        scores="pipeline/05_map/{target}.txt"
+        pair="results/pipeline/05_map/{target}.pair",
+        scores="results/pipeline/05_map/{target}.txt"
     params:
         jobname="{target}.pa"
     threads:
@@ -230,7 +230,7 @@ rule alignment_pairwise:
         mem_gb=8,
         time=30
     conda:
-        "envs/python3_env.yml"
+        "workflow/envs/python3_env.yml"
     shell:
         """
         samtools view {input} | sam2pairwise > {output.pair}
@@ -240,11 +240,11 @@ rule alignment_pairwise:
 # Use alignment information to identify on-target and off-target matches
 rule target_matches:
     input:
-        pair="pipeline/05_map/{target}.pair",
-        scores="pipeline/05_map/{target}.txt",
-        targets="pipeline/02_renamed/{target}.gtf"
+        pair="results/pipeline/05_map/{target}.pair",
+        scores="results/pipeline/05_map/{target}.txt",
+        targets="results/pipeline/02_renamed/{target}.gtf"
     output:
-        "pipeline/06_alignments/{target}.csv"
+        "results/pipeline/06_alignments/{target}.csv"
     params:
         jobname="{target}.tm"
     threads:
@@ -253,19 +253,19 @@ rule target_matches:
         mem_gb=8,
         time=30
     conda:
-        "envs/python3_env.yml"
+        "workflow/envs/python3_env.yml"
     shell:
         """
-        python scripts/parse_pairwise.py {input.pair} {input.scores} {input.targets} {output}
+        python workflow/scripts/parse_pairwise.py {input.pair} {input.scores} {input.targets} {output}
         """
 
 # Predict hybridisation probabilities based on machine learning models
 rule predict_duplex:
     input:
-        probes="pipeline/06_alignments/{target}.csv",
-        model="models/42_all_fixed_xgb.pickle.dat",
+        probes="results/pipeline/06_alignments/{target}.csv",
+        model="workflow/models/42_all_fixed_xgb.pickle.dat",
     output:
-        "pipeline/07_predictions/{target}.csv"
+        "results/pipeline/07_predictions/{target}.csv"
     params:
         jobname="{target}.pr"
     threads:
@@ -274,18 +274,18 @@ rule predict_duplex:
         mem_gb=8,
         time=30
     conda:
-        "envs/python3_env.yml"
+        "workflow/envs/python3_env.yml"
     shell:
         """
-        python scripts/XGB_predict.py {input.probes} {input.model} {output}
+        python workflow/scripts/XGB_predict.py {input.probes} {input.model} {output}
         """
 
-# Format probe scores 
+# Format probe scores
 rule score_probes:
     input:
-        "pipeline/07_predictions/{target}.csv"
+        "results/pipeline/07_predictions/{target}.csv"
     output:
-        "pipeline/08_scores/{target}.bed"
+        "results/pipeline/08_scores/{target}.bed"
     params:
         jobname="{target}.sc"
     threads:
@@ -294,17 +294,17 @@ rule score_probes:
         mem_gb=8,
         time=30
     conda:
-        "envs/python3_env.yml"
+        "workflow/envs/python3_env.yml"
     shell:
         """
-        python scripts/output_bed.py {input} {output}
+        python workflow/scripts/output_bed.py {input} {output}
         """
 # Filter out probes
 rule filter_probes:
     input:
-        "pipeline/08_scores/{target}.bed"
+        "results/pipeline/08_scores/{target}.bed"
     output:
-        "pipeline/09_kmer/{target}.tsv"
+        "results/pipeline/09_kmer/{target}.tsv"
     params:
         jobname="{target}.fi"
     threads:
@@ -313,7 +313,7 @@ rule filter_probes:
         mem_gb=8,
         time=30
     conda:
-        "envs/python3_env.yml"
+        "workflow/envs/python3_env.yml"
     shell:
         """
         awk '$4 !~ /N/ && $4 !~ /-/' {input} > {output}
@@ -322,18 +322,18 @@ rule filter_probes:
 # Count kmer frequency and hardcode strands
 rule max_kmer:
     input:
-        probes="pipeline/09_kmer/{target}.tsv",
-        jellyfish="pipeline/02_renamed/allgenomes.jf"
+        probes="results/pipeline/09_kmer/{target}.tsv",
+        jellyfish="results/pipeline/02_renamed/allgenomes.jf"
     output:
-        "probes/{target}.tsv"
+        "results/probes/{target}.tsv"
     params:
         jobname="{target}.kf"
     resources:
         mem_gb=8,
         time=30
     conda:
-        "envs/python3_env.yml"
+        "workflow/envs/python3_env.yml"
     shell:
         """
-        python scripts/kmer_frequency.py {input.probes} {input.jellyfish} {output}
+        python workflow/scripts/kmer_frequency.py {input.probes} {input.jellyfish} {output}
         """
