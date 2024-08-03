@@ -210,13 +210,13 @@ For instance, methylisocitrate lyase prpB is present in ***Stenotrophomonas rhiz
 conda activate isms_probe_design_env
 
 # Create targets for biotin synthase BioB
-python scripts/create_target.py -m region \
-     -g resources/data/GCF_000661955.1_ASM66195v1_genomic.gtf,resources/data/GCF_006540085.1_ASM654008v1_genomic.gtf,resources/data/GCF_900143175.1_ASM90014317v1_genomic.gtf,resources/data/GCF_029542105.1_ASM2954210v1_genomic.gtf \
+python workflow/scripts/create_target.py -m region \
+     -g resources/data \
      -a 'biotin synthase' \
      -o resources/targets/BioB.gtf
 
-python scripts/create_target.py -m region \
-     -g resources/data/GCF_000661955.1_ASM66195v1_genomic.gtf,resources/data/GCF_006540085.1_ASM654008v1_genomic.gtf,resources/data/GCF_900143175.1_ASM90014317v1_genomic.gtf,resources/data/GCF_029542105.1_ASM2954210v1_genomic.gtf \
+python workflow/scripts/create_target.py -m region \
+     -g resources/data \
      -a 'methylisocitrate lyase' \
      -o resources/targets/prpB.gtf
 ```
