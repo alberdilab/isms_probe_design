@@ -18,7 +18,7 @@
 # 6) Let snakemake to manage the slurm jobs until the
 
 # List genome and target wildcards
-genomes, = glob_wildcards("resources/genomes/{genome}.fa")
+genomes, = glob_wildcards("resources/genomes/{genome}.fna")
 targets, = glob_wildcards("resources/targets/{target}.gtf")
 
 # Expand target files
@@ -29,9 +29,9 @@ rule all:
 # Merge all input fasta files (bacterial genomes) into a single file.
 rule concatenate_fasta:
     input:
-        expand("resources/genomes/{genome}.fa", genome=genomes)
+        expand("resources/genomes/{genome}.fna", genome=genomes)
     output:
-        "results/pipeline/01_input/allgenomes.fa"
+        "results/pipeline/01_input/allgenomes.fna"
     params:
         jobname="allgenomes.pf"
     threads:
@@ -49,7 +49,7 @@ rule concatenate_fasta:
 # Create a mapping file of contig headers, with modified new headers in the case of duplications
 rule unique_headers:
     input:
-        "results/pipeline/01_input/allgenomes.fa"
+        "results/pipeline/01_input/allgenomes.fna"
     output:
         "results/pipeline/02_renamed/headers.tsv"
     params:
@@ -69,10 +69,10 @@ rule unique_headers:
 # If necessary, modify headers to avoid duplicated identities that would affect downstream operations
 rule unique_headers_fasta:
     input:
-        fasta="results/pipeline/01_input/allgenomes.fa",
+        fasta="results/pipeline/01_input/allgenomes.fna",
         headers="results/pipeline/02_renamed/headers.tsv"
     output:
-        "results/pipeline/02_renamed/allgenomes.fa"
+        "results/pipeline/02_renamed/allgenomes.fna"
     params:
         jobname="allgenomes.uf"
     threads:
@@ -90,7 +90,7 @@ rule unique_headers_fasta:
 # Bowtie index renamed fasta file for downstream probe mapping
 rule index_fasta:
     input:
-        "results/pipeline/02_renamed/allgenomes.fa"
+        "results/pipeline/02_renamed/allgenomes.fna"
     output:
         "results/pipeline/02_renamed/allgenomes.rev.1.bt2"
     params:
@@ -111,7 +111,7 @@ rule index_fasta:
 # Jellyfish count renamed fasta file for downstream kmer count
 rule build_jellyfish:
     input:
-        "results/pipeline/02_renamed/allgenomes.fa"
+        "results/pipeline/02_renamed/allgenomes.fna"
     output:
         "results/pipeline/02_renamed/allgenomes.jf"
     params:
@@ -150,10 +150,10 @@ rule unique_ids_gtf:
 # Based on the GTF information, extract target regions from the original fasta files to design probes.
 rule extract_targets:
     input:
-        fasta="results/pipeline/02_renamed/allgenomes.fa",
+        fasta="results/pipeline/02_renamed/allgenomes.fna",
         gtf="results/pipeline/02_renamed/{target}.gtf"
     output:
-        "results/pipeline/03_extract/{target}.fa"
+        "results/pipeline/03_extract/{target}.fna"
     params:
         jobname="{target}.ex"
     threads:
@@ -171,7 +171,7 @@ rule extract_targets:
 # Generate the initial set of probes to be tested for suitability.
 rule generate_probes:
     input:
-        "results/pipeline/03_extract/{target}.fa"
+        "results/pipeline/03_extract/{target}.fna"
     output:
         "results/pipeline/04_probes/{target}.fastq"
     params:
