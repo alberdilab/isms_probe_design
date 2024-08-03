@@ -112,7 +112,7 @@ The final probe set file has the following structure:
 | Original contig | Target region start | Target region finish | Probe sequence | Temperature | XX | XX | XX | XX | XX |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | genome1_contig1 | 1 | 2198 | GTTGTGTTGAGAGTGGTGTGAGTGGAACTATCATTCCA | 42.320 | 100.000 | 0.000 | 0 | 0 | + |
-| genome1_contig4 6770 | 13645 | TGGCCCTTCACCTTTTCAGATGAACCGTAAGCGCTG | 45.900 | 99.077 | 0.000 | 0 | 0 | + |
+| genome1_contig4 | 6770 | 13645 | TGGCCCTTCACCTTTTCAGATGAACCGTAAGCGCTG | 45.900 | 99.077 | 0.000 | 0 | 0 | + |
 (...)
 
 ## Tutorial
