@@ -98,6 +98,8 @@ snakemake \
 
 ## Tutorial
 
+In this small tutorial four bacterial genomes available at NCBI are used to showcase the design of probes targeting entire genomes and specific genomic regions.
+
 ### 1. Get genome data from NCBI
 
 ```
