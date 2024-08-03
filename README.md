@@ -3,6 +3,8 @@ ISMS Probe Design is a bioinformatic pipeline to design probes for in-situ seque
 
 - [Installation](#installation)
 - [Workflow](#workflow)
+- [Results](#results)
+- [Tutorial](#tutorial)
 
 ## Installation
 
