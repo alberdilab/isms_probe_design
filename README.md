@@ -102,10 +102,16 @@ In this small tutorial four bacterial genomes available at NCBI are used to show
 
 ### 1. Get genome data from NCBI
 
+Create a new folder named `data` in the resources directory to store the data downloaded from the NCBI.
+
 ```
 mkdir resources/data
 cd resources/data
+```
 
+Use wget to fetch genomic data of ***[Stenotrophomonas rhizophila](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_000661955.1/)***, ***[Microbacterium oxydans](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_006540085.1/)***, ***[Xanthomonas retroflexus](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_900143175.1/)*** and ***[Paenibacillus amylolyticus](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_029542105.1/)*** directly from the NCBI FTP.
+
+```
 # Get genome data of Stenotrophomonas rhizophila
 wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/661/955/GCF_000661955.1_ASM66195v1/GCF_000661955.1_ASM66195v1_genomic.fna.gz
 wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/661/955/GCF_000661955.1_ASM66195v1/GCF_000661955.1_ASM66195v1_genomic.gtf.gz
@@ -121,15 +127,19 @@ https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/900/143/175/GCF_900143175.1_ASM9001
 # Get genome data of Paenibacillus amylolyticus
 https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/029/542/105/GCF_029542105.1_ASM2954210v1/GCF_029542105.1_ASM2954210v1_genomic.fna.gz
 https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/029/542/105/GCF_029542105.1_ASM2954210v1/GCF_029542105.1_ASM2954210v1_genomic.gtf.gz
+```
 
-# Decompress all files
+Decompress all files to get them ready for target GTF generation.
+
+```
 gunzip *
 cd ../..
 ```
 
 ### 2. Prepare target GTFs
 
-First of all, remove the example files
+First of all, remove the example files from the `genomes` and `targets` directories.
+
 ```
 rm resources/genomes/*.fna
 rm resources/targets/*.gtf
@@ -137,7 +147,7 @@ rm resources/targets/*.gtf
 
 #### 2.1 Genome-level targets
 
-Using the `create_target.py` script, create target files to design probes to detect each genome. The scripts generate a targets GTF file from the FASTA sequence file.
+Using the `create_target.py` script, create target files to design probes to detect each genome. The script generates a targets GTF file from the FASTA sequence file.
 
 ```
 conda activate isms_probe_design_env
