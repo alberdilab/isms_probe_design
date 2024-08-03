@@ -16,20 +16,19 @@ def read_gtf(gtf_file):
     return pd.read_csv(gtf_file, sep='\t', comment='#', header=None,
                        names=['seqname', 'source', 'feature', 'start', 'end', 'score', 'strand', 'frame', 'attribute'])
 
-def filter_gtf(df, annotation, exon_only):
-    # filters the df based on the annotation and exon flags
+def filter_gtf(df, annotation):
+    # filters the df based on the annotation
     filtered_df = df[df['attribute'].str.contains(annotation)]
-    if exon_only:
-        filtered_df = filtered_df[filtered_df['feature'] == 'exon']
+    filtered_df = filtered_df[filtered_df['feature'] == 'CDS']
     return filtered_df
 
-def process_region_mode(gtf_files, annotation, exon_only, output_file):
+def process_region_mode(gtf_files, annotation, output_file):
     # aggregate all filtered dfs
     filtered_dfs = []
 
     for gtf_file in gtf_files:
         df = read_gtf(gtf_file)
-        filtered_df = filter_gtf(df, annotation, exon_only)
+        filtered_df = filter_gtf(df, annotation)
         if not filtered_df.empty:
             filtered_dfs.append(filtered_df)
 
@@ -71,8 +70,6 @@ def main():
                         help='List of input GTF files or folders containing GTF files (required in region mode)')
     parser.add_argument('-a', '--annotation',
                         help='Annotation to filter for (required in region mode)')
-    parser.add_argument('-e', '--exon', action='store_true',
-                        help='Filter to include only exons (optional in region mode)')
 
     # genome mode arguments
     parser.add_argument('-f', '--fasta',
@@ -102,7 +99,7 @@ def main():
         if not gtf_files:
             raise FileNotFoundError("No GTF files found in the provided paths")
 
-        process_region_mode(gtf_files, args.annotation, args.exon, args.output)
+        process_region_mode(gtf_files, args.annotation, args.output)
 
     elif args.mode == 'genome':
         if not args.fasta:
