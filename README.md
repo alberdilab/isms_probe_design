@@ -89,7 +89,7 @@ Snakemake automatically launches jobs to the slurm queue. On a screen session, l
 ```
 screen -S isms_probe_design
 cd isms_probe_design
-module purge && module load snakemake/7.20.0 mamba/1.3.1
+conda activate isms_probe_design_env
 snakemake \
   -j 20 \
   --cluster 'sbatch -o results/log/{params.jobname}-slurm-%j.out --mem {resources.mem_gb}G --time {resources.time} -c {threads} --job-name={params.jobname} -v' \
@@ -251,7 +251,7 @@ Now all relevant files should be located in their corresponding paths. Note that
 ```
 screen -S isms_probe_design
 cd isms_probe_design
-module purge && module load snakemake/7.20.0 mamba/1.3.1
+conda activate isms_probe_design_env
 snakemake \
   -j 20 \
   --cluster 'sbatch -o results/log/{params.jobname}-slurm-%j.out --mem {resources.mem_gb}G --time {resources.time} -c {threads} --job-name={params.jobname} -v' \
