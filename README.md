@@ -127,27 +127,35 @@ cd ../..
 
 ### 2. Prepare target GTFs
 
+First of all, remove the example files
+```
+rm resources/genomes/*.fna
+rm resources/targets/*.gtf
+```
+
 #### 2.1 Genome-level targets
+
+Using the `create_target.py` script, create target files to design probes to detect each genome. The scripts generate a targets GTF file from the FASTA sequence file.
 
 ```
 conda activate isms_probe_design_env
 
-# Create targets of Stenotrophomonas rhizophila
+# Create targets for Stenotrophomonas rhizophila
 python workflow/scripts/create_target.py -m genome \
      -f resources/data/GCF_000661955.1_ASM66195v1_genomic.fna \
      -o resources/targets/stenotrophomonas_rhizophila.gtf
 
-# Create targets of Microbacterium oxydans
+# Create targets for Microbacterium oxydans
 python workflow/scripts/create_target.py -m genome \
      -f resources/data/GCF_006540085.1_ASM654008v1_genomic.fna \
      -o resources/targets/microbacterium_oxydans.gtf
 
-# Create targets of Xanthomonas retroflexus
+# Create targets for Xanthomonas retroflexus
 python workflow/scripts/create_target.py -m genome \
      -f resources/data/GCF_900143175.1_ASM90014317v1_genomic.fna \
      -o resources/targets/xanthomonas_retroflexus.gtf
 
-# Create targets of Paenibacillus amylolyticus
+# Create targets for Paenibacillus amylolyticus
 python workflow/scripts/create_target.py -m genome \
      -f resources/data/GCF_029542105.1_ASM2954210v1_genomic.fna \
      -o resources/targets/paenibacillus_amylolyticus.gtf
@@ -155,5 +163,62 @@ python workflow/scripts/create_target.py -m genome \
 
 #### 2.2 Region-level targets
 
+Using the `create_target.py` script, create target files to design probes to detect specific regions across genomes. The script parses the annotation identifier and generates the targets GTF file with genomic region information from all candidate genome files.
 
-### 3. Run probe design
+For instance, biotin synthase BioB is present in ***Stenotrophomonas rhizophila*** and ***Xanthomonas retroflexus***, but not in ***Paenibacillus amylolyticus*** and ***Microbacterium oxydans***.
+
+For instance, methylisocitrate lyase prpB is present in ***Stenotrophomonas rhizophila***,  ***Xanthomonas retroflexus*** and ***Microbacterium oxydans***, but not in ***Paenibacillus amylolyticus***.
+
+```
+conda activate isms_probe_design_env
+
+# Create targets for biotin synthase BioB
+python scripts/create_target.py -m region \
+     -g resources/data/GCF_000661955.1_ASM66195v1_genomic.gtf,resources/data/GCF_006540085.1_ASM654008v1_genomic.gtf,resources/data/GCF_900143175.1_ASM90014317v1_genomic.gtf,resources/data/GCF_029542105.1_ASM2954210v1_genomic.gtf \
+     -a 'biotin synthase' \
+     -o resources/targets/BioB.gtf
+
+python scripts/create_target.py -m region \
+     -g resources/data/GCF_000661955.1_ASM66195v1_genomic.gtf,resources/data/GCF_006540085.1_ASM654008v1_genomic.gtf,resources/data/GCF_900143175.1_ASM90014317v1_genomic.gtf,resources/data/GCF_029542105.1_ASM2954210v1_genomic.gtf \
+     -a 'methylisocitrate lyase' \
+     -o resources/targets/prpB.gtf
+```
+
+### 3. Prepare sequence FASTA files
+
+Sequence FASTA files need to be stored in the `resources/genomes` folder.
+
+```
+cp resources/data/*.fna resources/genomes/
+```
+
+Now all relevant files should be located in their corresponding paths. Note that different target types (genome and region) can be processed simultaneously by the pipeline.
+
+```
+- resources/genomes/
+  - GCF_000661955.1_ASM66195v1_genomic.fna
+  - GCF_006540085.1_ASM654008v1_genomic.fna
+  - GCF_900143175.1_ASM90014317v1_genomic.fna
+  - GCF_029542105.1_ASM2954210v1_genomic.fna
+
+- resources/targets/
+  - stenotrophomonas_rhizophila.gtf
+  - microbacterium_oxydans.gtf
+  - xanthomonas_retroflexus.gtf
+  - paenibacillus_amylolyticus.gtf
+  - BioB.gtf
+  - prpB.gtf
+```
+
+### 4. Run probe design
+
+```
+screen -S isms_probe_design
+cd isms_probe_design
+module purge && module load snakemake/7.20.0 mamba/1.3.1
+snakemake \
+  -j 20 \
+  --cluster 'sbatch -o log/{params.jobname}-slurm-%j.out --mem {resources.mem_gb}G --time {resources.time} -c {threads} --job-name={params.jobname} -v' \
+  --use-conda --conda-frontend mamba --conda-prefix conda \
+  --latency-wait 600
+```
