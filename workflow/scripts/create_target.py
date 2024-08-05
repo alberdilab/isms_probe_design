@@ -22,20 +22,19 @@ def filter_gtf(df, annotation):
     filtered_df = filtered_df[filtered_df['feature'] == 'CDS']
     return filtered_df
 
-def process_region_mode(gtf_files, annotation, output_file):
-    # aggregate all filtered dfs
+def process_region_mode(gtf_files, annotations, output_file):
+    # Aggregate all filtered DataFrames
     filtered_dfs = []
+    for gene in annotations:
+        for gtf_file in gtf_files:
+            df = read_gtf(gtf_file)
+            filtered_df = filter_gtf(df, gene)
+            if not filtered_df.empty:
+                filtered_dfs.append(filtered_df)
 
-    for gtf_file in gtf_files:
-        df = read_gtf(gtf_file)
-        filtered_df = filter_gtf(df, annotation)
-        if not filtered_df.empty:
-            filtered_dfs.append(filtered_df)
-
-    # concatenate all filtered dfs
+    # Concatenate all filtered DataFrames
     if not filtered_dfs:
-
-        raise LookupError("No matches found for annotation:", annotation)
+        raise LookupError(f"No matches found for annotations: {', '.join(annotations)}")
 
     else:
 
@@ -65,13 +64,13 @@ def main():
                              'region - Filter GTF files based on annotations\n'
                              'genome - Process a single FASTA file')
 
-    # region mode arguments
+    # Region mode arguments
     parser.add_argument('-g', '--gtf', nargs='+',
                         help='List of input GTF files or folders containing GTF files (required in region mode)')
     parser.add_argument('-a', '--annotation',
-                        help='Annotation to filter for (required in region mode)')
+                        help='Comma-separated list of annotations to filter for (required in region mode)')
 
-    # genome mode arguments
+    # Genome mode arguments
     parser.add_argument('-f', '--fasta',
                         help='Input FASTA file (required in genome mode)')
 
@@ -99,7 +98,10 @@ def main():
         if not gtf_files:
             raise FileNotFoundError("No GTF files found in the provided paths")
 
-        process_region_mode(gtf_files, args.annotation, args.output)
+        # Separate annotations by comma
+        annotations_list = args.annotation.split(',')
+
+            process_region_mode(gtf_files, annotations_list, args.output)
 
     elif args.mode == 'genome':
         if not args.fasta:
