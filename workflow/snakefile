@@ -40,7 +40,7 @@ rule concatenate_fasta:
         mem_gb=8,
         time=30
     conda:
-        "workflow/envs/python3_env.yml"
+        "envs/python3_env.yml"
     shell:
         """
         python workflow/scripts/concatenate_fasta.py {output} {input}
@@ -60,7 +60,7 @@ rule unique_headers:
         mem_gb=8,
         time=5
     conda:
-        "workflow/envs/python3_env.yml"
+        "envs/python3_env.yml"
     shell:
         """
         python workflow/scripts/unique_headers.py {input} {output}
@@ -81,7 +81,7 @@ rule unique_headers_fasta:
         mem_gb=8,
         time=5
     conda:
-        "workflow/envs/python3_env.yml"
+        "envs/python3_env.yml"
     shell:
         """
         python workflow/scripts/update_fasta_headers.py {input.fasta} {input.headers} {output}
@@ -102,7 +102,7 @@ rule index_fasta:
         mem_gb=8,
         time=60
     conda:
-        "workflow/envs/python3_env.yml"
+        "envs/python3_env.yml"
     shell:
         """
         bowtie2-build {input} {params.base}
@@ -120,7 +120,7 @@ rule build_jellyfish:
         mem_gb=16,
         time=60
     conda:
-        "workflow/envs/python3_env.yml"
+        "envs/python3_env.yml"
     shell:
         """
         jellyfish count -m 18 -s 3300M -o {output} --out-counter-len 1 -L 2 {input}
@@ -141,7 +141,7 @@ rule unique_ids_gtf:
         mem_gb=8,
         time=5
     conda:
-        "workflow/envs/python3_env.yml"
+        "envs/python3_env.yml"
     shell:
         """
         python workflow/scripts/update_gtf_ids.py {input.gtf} {input.headers} {output}
@@ -162,7 +162,7 @@ rule extract_targets:
         mem_gb=8,
         time=30
     conda:
-        "workflow/envs/python3_env.yml"
+        "envs/python3_env.yml"
     shell:
         """
         bedtools getfasta -fi {input.fasta} -bed {input.gtf} > {output}
@@ -187,7 +187,7 @@ rule generate_probes:
         mem_gb=8,
         time=30
     conda:
-        "workflow/envs/python2_env.yml"
+        "envs/python2_env.yml"
     shell:
         """
         python workflow/scripts/blockParse.py  -l {params.min_length} -L {params.max_length} -t {params.min_tm} -T {params.max_tm} -f {input} -o {params.base}
@@ -209,7 +209,7 @@ rule align_probes:
         mem_gb=8,
         time=30
     conda:
-        "workflow/envs/python3_env.yml"
+        "envs/python3_env.yml"
     shell:
         """
         bowtie2 -x {params.ref} -q {input.fq} --threads {threads} --very-sensitive-local -k 100 | samtools view -bS - > {output}
@@ -230,7 +230,7 @@ rule alignment_pairwise:
         mem_gb=8,
         time=30
     conda:
-        "workflow/envs/python3_env.yml"
+        "envs/python3_env.yml"
     shell:
         """
         samtools view {input} | sam2pairwise > {output.pair}
@@ -253,7 +253,7 @@ rule target_matches:
         mem_gb=8,
         time=30
     conda:
-        "workflow/envs/python3_env.yml"
+        "envs/python3_env.yml"
     shell:
         """
         python workflow/scripts/parse_pairwise.py {input.pair} {input.scores} {input.targets} {output}
@@ -274,7 +274,7 @@ rule predict_duplex:
         mem_gb=8,
         time=30
     conda:
-        "workflow/envs/python3_env.yml"
+        "envs/python3_env.yml"
     shell:
         """
         python workflow/scripts/XGB_predict.py {input.probes} {input.model} {output}
@@ -294,7 +294,7 @@ rule score_probes:
         mem_gb=8,
         time=30
     conda:
-        "workflow/envs/python3_env.yml"
+        "envs/python3_env.yml"
     shell:
         """
         python workflow/scripts/output_bed.py {input} {output}
@@ -313,7 +313,7 @@ rule filter_probes:
         mem_gb=8,
         time=30
     conda:
-        "workflow/envs/python3_env.yml"
+        "envs/python3_env.yml"
     shell:
         """
         awk '$4 !~ /N/ && $4 !~ /-/' {input} > {output}
@@ -332,7 +332,7 @@ rule max_kmer:
         mem_gb=8,
         time=30
     conda:
-        "workflow/envs/python3_env.yml"
+        "envs/python3_env.yml"
     shell:
         """
         python workflow/scripts/kmer_frequency.py {input.probes} {input.jellyfish} {output}
