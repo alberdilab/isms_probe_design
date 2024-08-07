@@ -1,7 +1,7 @@
 ######
 # InSituMicrobeSeq probe design pipeline
 # Martí Dalmases & Antton Alberdi
-# 2024/08/02
+# 2024/08/05
 # Description: Rank probes based on the on/off-scores, Tm and kmer count
 ######
 
@@ -17,12 +17,6 @@ weight_kmer_count = -0.2
 probes_file = sys.argv[1]
 output_file = sys.argv[2]
 
-# Define the column names manually since the file has no header
-column_names = [
-    'chrom', 'start', 'stop', 'parent', 'Tm',
-    'on_target_score', 'off_target_score', 'repeat',
-    'kmer_count', 'strand'
-]
 
 # Define a function to calculate the rank
 def calculate_rank(row):
@@ -32,8 +26,10 @@ def calculate_rank(row):
             weight_kmer_count * float(row['kmer_count']))
 
 def main():
-    # Read the TSV file into a DataFrame without a header
-    df = pd.read_csv(probes_file, sep='\t', header=None, names=column_names)
+    # Read the TSV file into a DataFrame
+    df = pd.read_csv(probes_file, sep='\t', header=None, names=['chrom', 'start', 'stop', 'parent', 'Tm',
+    'on_target_score', 'off_target_score', 'repeat',
+    'kmer_count', 'strand'])
 
     # Add a new column for rank calculation
     df['rank_calculation'] = None
