@@ -123,6 +123,25 @@ The final probe set file has the following structure:
 - The fourth column is the sequence of the probe.
 - The final six columns contain attributes of the probe.
 
+## Rank probes
+
+```
+cat << 'EOF' > rank_probes.sh
+#!/bin/bash
+#SBATCH --job-name=rank_probes
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --mem=48gb
+#SBATCH --time=600
+
+module load mamba/1.5.8
+source activate isms_probe_design_env
+python workflow/scripts/rank_probes.py -i results/probes -p resources/priority.tsv -o results -g resources/targets -c 1000
+EOF
+
+sbatch rank_probes.sh
+```
+
 ## Tutorial
 
 In this small tutorial four bacterial genomes available at NCBI are used to showcase the design of probes targeting entire genomes and specific genomic regions.
