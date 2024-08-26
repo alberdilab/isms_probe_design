@@ -7,3 +7,4 @@ dependencies:
   - python=3.7
   - biopython=1.77
   - snakemake=7.20.0
+  - intervaltree=2.1.0
