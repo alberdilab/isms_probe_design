@@ -10,7 +10,7 @@ import sys
 import argparse
 import glob
 import numpy as np
-from intervaltree import Interval, IntervalTree
+from scipy.stats import gaussian_kde
 import multiprocessing as mp
 import pandas as pd
 
@@ -23,7 +23,7 @@ W_KMER = -0.2
 W_DENSITY = 0.3
 W_SPARCE = 0.3
 
-
+BANDWIDTH = 40
 
 ## Import files ##
 
@@ -62,74 +62,75 @@ def load_gtf_targets(directory):
 
 ## Multiprocessing Functions ##
 
-def process_genome(group_tuple):
+def process_genome(genome_args):
+    # extract arguments
+    group_tuple, priority_df = genome_args
     genome_name, group = group_tuple
+
+    # calculate density
     genome_df = calculate_density(group, priority_df['tag'])
-    print("Calculating density for " + genome_name)
+    print("Calculated density for " + genome_name)
+
     return genome_df
 
-def process_target(target_tuple):
+def process_target(target_args):
+    # extract arguments
+    target_tuple, priority_map, gtf_files = target_args
     target_name, group = target_tuple
+
+    # calculate proportional probes
     target_probe_count = int(priority_map[target_name] * total_probe_count)
+
+    # calculate sparcity
     target_df = calculate_sparcity(group, target_probe_count, gtf_files)
+
+    # final weighted calculation
     target_df = assign_final_value(target_df)
+
+    # sort and select dedicated fraction of probes
     target_df = target_df.sort_values(by=['rank'], ascending=False)
     selected_probes = target_df.head(target_probe_count)
+
     print("Calculated sparcity for " + target_name)
+
     return selected_probes
+
 
 ## run density ##
 
-def build_interval_tree(genome_df):
-    tree = IntervalTree()
-    for idx, probe in genome_df.iterrows():
-        tree[probe['start']:probe['stop'] + 1] = idx  # store the index of the probe in the interval
-    print("BUILT TREE")
-    return tree
-
 def calculate_density(genome_df, priority_list):
 
-    genome_df['density'] = 0.0
-    genome_df['processed'] = False
+    # assign priority ranks to the probes
     priority_map = {tag: i for i, tag in enumerate(priority_list)}
-
-    # Add a priority rank based on the priority list
     genome_df['priority_rank'] = genome_df['tag'].apply(lambda x: priority_map.get(x, len(priority_list)))
-    genome_df = genome_df.sort_values(by=['priority_rank', 'start'])
 
-    # build the interval tree
-    tree = build_interval_tree(genome_df)
+    # sort by priority rank and start position
+    genome_df = genome_df.sort_values(by=['priority_rank', 'start']).reset_index(drop=True)
 
-    # calculate density for each probe
+    # extract the start point for KDE calculations
+    positions = genome_df['start'].values
+
+    # KDE on the probe positions
+    kde = gaussian_kde(positions, bw_method=BANDWIDTH / np.std(positions))
+
+    # estimate the density for each probe's start positionProcessing complete. 1000 probes were considered in total.
+    densities = kde(positions)
+
+    # assign density values adjusted by priority weight
+    genome_df['density'] = 0.0
     for idx, probe in genome_df.iterrows():
-        if not probe['processed']:
-            # query the interval tree for overlaps
-            overlapping_intervals = tree[probe['start']:probe['stop'] + 1]
-            overlapping_indices = [iv.data for iv in overlapping_intervals]
+        priority_rank = probe['priority_rank']
 
-            # extract overlapping probes
-            overlapping_probes = genome_df.loc[overlapping_indices]
+        if priority_rank == genome_df['priority_rank'].min():
+            priority_weight = 1.0  # highest priority gets full weight
+        else:
+            priority_weight = 1 / (priority_rank + 1)  # lower priority gets reduced weight
 
-            # calculate local density
-            local_density = len(overlapping_probes)
+        # scale the density by the priority weight
+        density_value = densities[idx] * priority_weight
+        genome_df.at[idx, 'density'] = density_value
 
-            # calculate local highest priority
-            highest_priority_rank = overlapping_probes['priority_rank'].min()
-
-            # assign density values with priority weight
-            for i, (overlap_idx, overlap_probe) in enumerate(overlapping_probes.iterrows()):
-                priority_rank = overlap_probe['priority_rank']
-
-                if priority_rank == highest_priority_rank:
-                    priority_weight = 1  # highest priority probe gets a value 1
-                else:
-                    priority_weight = (1 / (priority_rank + 1))  # lower priority probes get a reduced weight
-
-                density_value = (1 / (local_density + 1)) * priority_weight
-                genome_df.at[overlap_idx, 'density'] = max(genome_df.at[overlap_idx, 'density'], density_value)
-                genome_df.at[overlap_idx, 'processed'] = True
-
-    genome_df = genome_df.drop(columns=['processed', 'priority_rank'])
+    genome_df = genome_df.drop(columns=['priority_rank'])
 
     return genome_df
 
@@ -169,8 +170,6 @@ def calculate_sparcity(target_df, probe_count, gtf_data):
         contig_length = stop_pos - start_pos + 1
 
         # calculate assigned contig probes
-        print(type(contig_length), type(total_target_size), type(probe_count))
-
         num_probes = int(round((contig_length / total_target_size) * probe_count))
 
         # divide the contig into equal parts based on the number of probes
@@ -223,9 +222,11 @@ def main(input_directory, priority_file, gtf_directory, output_directory, total_
     # separate by 'genome'
     genome_groups = list(combined_df.groupby('genome'))
 
+    genome_args = [(group_tuple, priority_df) for group_tuple in genome_groups]
+
     # process each genome for density
     with mp.Pool(mp.cpu_count()) as pool:
-        genome_results = pool.map(process_genome, genome_groups)
+        genome_results = pool.map(process_genome, genome_args)
 
     pool.close()
     pool.join()
@@ -239,14 +240,16 @@ def main(input_directory, priority_file, gtf_directory, output_directory, total_
     # separate by 'target'
     target_groups = density_df.groupby('tag')
 
+    target_args = [(target_tuple, priority_map, gtf_files) for target_tuple in target_groups]
+
     # process each target distribution
     with mp.Pool(mp.cpu_count()) as pool:
-        target_results = pool.map(process_target, target_groups)
+        target_results = pool.map(process_target, target_args)
 
     pool.close()
     pool.join()
 
-    final_df = pd.concat(target_results, ignore_intex=True)
+    final_df = pd.concat(target_results, ignore_index=True)
     print("CALCULATED SPARCITY")
 
     # save final result
