@@ -1,6 +1,6 @@
 ######
 # InSituMicrobeSeq probe design pipeline
-# Martí Dalmases & Antton Alberdi
+# MartÃ­ Dalmases & Antton Alberdi
 # 2024/08/16
 # Description: Select probes for experimentation based on a density and distribution ranking.
 ######
@@ -11,6 +11,7 @@ import argparse
 import glob
 import numpy as np
 from intervaltree import Interval, IntervalTree
+import multiprocessing as mp
 import pandas as pd
 
 ## WEIGHTS ##
@@ -58,6 +59,24 @@ def load_gtf_targets(directory):
             gtf_data[file_name] = lines  # store lines for each GTF file
     return gtf_data
 
+
+## Multiprocessing Functions ##
+
+def process_genome(group_tuple):
+    genome_name, group = group_tuple
+    genome_df = calculate_density(group, priority_df['tag'])
+    print("Calculating density for " + genome_name)
+    return genome_df
+
+def process_target(target_tuple):
+    target_name, group = target_tuple
+    target_probe_count = int(priority_map[target_name] * total_probe_count)
+    target_df = calculate_sparcity(group, target_probe_count, gtf_files)
+    target_df = assign_final_value(target_df)
+    target_df = target_df.sort_values(by=['rank'], ascending=False)
+    selected_probes = target_df.head(target_probe_count)
+    print("Calculated sparcity for " + target_name)
+    return selected_probes
 
 ## run density ##
 
@@ -202,36 +221,32 @@ def main(input_directory, priority_file, gtf_directory, output_directory, total_
     combined_df = combined_df.sort_values(by=['genome', 'start', 'stop'])
 
     # separate by 'genome'
-    genome_groups = combined_df.groupby('genome')
+    genome_groups = list(combined_df.groupby('genome'))
 
     # process each genome for density
-    genome_dict = {}
-    for genome_name, group in genome_groups:
-        genome_df = calculate_density(group, priority_df['tag'])
-        genome_dict[genome_name] = genome_df
-        print("Calculating density for " + genome_name)
+    with mp.Pool(mp.cpu_count()) as pool:
+        genome_results = pool.map(process_genome, genome_groups)
 
-    density_df = pd.concat([df for df in genome_dict.values()])
-    print("DENSITY CALCULATED")
+    pool.close()
+    pool.join()
+
+    density_df = pd.concat(genome_results, ignore_index=True)
+    print("CALCULATED DENSITY")
 
     # sort by target
     density_df = density_df.sort_values(by=['tag'])
 
-    # separate by target
+    # separate by 'target'
     target_groups = density_df.groupby('tag')
 
     # process each target distribution
-    target_dict = {}
-    for target_name, group in target_groups:
-        target_probe_count = int(priority_map[target_name] * total_probe_count)
-        target_df = calculate_sparcity(group, target_probe_count, gtf_files)
-        target_df = assign_final_value(target_df)
-        target_df = target_df.sort_values(by=['rank'], ascending=False)
-        selected_probes = target_df.head(target_probe_count)
-        target_dict[target_name] = selected_probes
-        print("Calculated sparcity for" + target_name)
-    #
-    final_df = pd.concat([df for df in target_dict.values()])
+    with mp.Pool(mp.cpu_count()) as pool:
+        target_results = pool.map(process_target, target_groups)
+
+    pool.close()
+    pool.join()
+
+    final_df = pd.concat(target_results, ignore_intex=True)
     print("CALCULATED SPARCITY")
 
     # save final result
@@ -278,4 +293,3 @@ if __name__ == "__main__":
         sys.exit(1)
 
     main(input_directory, priority_file, gtf_directory, output_directory, total_probe_count)
-
