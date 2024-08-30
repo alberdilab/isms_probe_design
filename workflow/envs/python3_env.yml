@@ -4,6 +4,7 @@ dependencies:
   - conda-forge::python_abi=3.7
   - conda-forge::biopython=1.77
   - conda-forge::xgboost=0.82
+  - conda-forge::scipy=1.7.3
   - defaults::ncurses=6.1
   - defaults::numpy=1.18.5
   - defaults::pandas=1.0.5
