@@ -66,16 +66,16 @@ def load_gtf_targets(directory):
 
 ## Multiprocessing Functions ##
 
-def process_genome(genome_args):
+def process_contig(contig_args):
     # extract arguments
-    group_tuple, priority_df = genome_args
-    genome_name, group = group_tuple
+    group_tuple, priority_df = contig_args
+    contig_name, group = group_tuple
 
     # calculate density
-    genome_df = calculate_density(group, priority_df['tag'])
-    print("Calculated density for " + genome_name)
+    contig_df = calculate_density(group, priority_df['tag'])
+    print("Calculated density for " + contig_name)
 
-    return genome_df
+    return contig_df
 
 def process_target(target_args):
     # extract arguments
@@ -116,17 +116,17 @@ def process_target(target_args):
 
 ## run density ##
 
-def calculate_density(genome_df, priority_list):
+def calculate_density(contig_df, priority_list):
 
     # assign priority ranks to the probes
     priority_map = {tag: i for i, tag in enumerate(priority_list)}
-    genome_df['priority_rank'] = genome_df['tag'].apply(lambda x: priority_map.get(x, len(priority_list)))
+    contig_df['priority_rank'] = contig_df['tag'].apply(lambda x: priority_map.get(x, len(priority_list)))
 
     # sort by priority rank and start position
-    genome_df = genome_df.sort_values(by=['priority_rank', 'start']).reset_index(drop=True)
+    contig_df = contig_df.sort_values(by=['priority_rank', 'start']).reset_index(drop=True)
 
     # extract the start point for KDE calculations
-    positions = genome_df['start'].values
+    positions = contig_df['start'].values
 
     # KDE on the probe positions
     kde = gaussian_kde(positions, bw_method=BANDWIDTH / np.std(positions))
@@ -135,22 +135,22 @@ def calculate_density(genome_df, priority_list):
     densities = kde(positions)
 
     # assign density values adjusted by priority weight
-    genome_df['density'] = 0.0
-    for idx, probe in genome_df.iterrows():
+    contig_df['density'] = 0.0
+    for idx, probe in contig_df.iterrows():
         priority_rank = probe['priority_rank']
 
-        if priority_rank == genome_df['priority_rank'].min():
+        if priority_rank == contig_df['priority_rank'].min():
             priority_weight = 1.0  # highest priority gets full weight
         else:
             priority_weight = 1 / (priority_rank + 1)  # lower priority gets reduced weight
 
         # scale the density by the priority weight
         density_value = densities[idx] * priority_weight
-        genome_df.at[idx, 'density'] = density_value
+        contig_df.at[idx, 'density'] = density_value
 
-    genome_df = genome_df.drop(columns=['priority_rank'])
+    contig_df = contig_df.drop(columns=['priority_rank'])
 
-    return genome_df
+    return contig_df
 
 
 
@@ -171,44 +171,37 @@ def calculate_sparsity(target_df, probe_count, gtf_data):
     # sort by contig
     target_df = target_df.sort_values(by=['genome', 'start', 'stop'])
 
-    # store probe assignments for each contig
-    all_contig_dfs = []
+     # Calculate contig size relative to the total
+    for contig, contig_df in target_df.groupby('genome'):
+        # Create a mask for rows that belong to the current contig
+        contig_mask = target_df['genome'] == contig
 
-    # calculate contig size relative to the total
-    for contig, contig_df in target_df.groupby('genome'): # note the 'genome' format is genome1_contig4 for which this actually groups by contigs
-        # calculate its lenght from the correspondent GTF line
+        # Calculate its length from the corresponding GTF line
         contig_gtf = next((line for line in gtf_lines if line[0] == contig), None)
 
         if not contig_gtf:
             raise ValueError(f"GTF data for {contig} not found in {gtf_lines}. Please make sure all input filenames and target names are correct (case-sensitive)")
 
-        start_pos = int(contig_gtf[3])  # start position from GTF
-        stop_pos = int(contig_gtf[4])   # stop position from GTF
+        start_pos = int(contig_gtf[3])  # Start position from GTF
+        stop_pos = int(contig_gtf[4])   # Stop position from GTF
 
         contig_length = stop_pos - start_pos + 1
 
-        # calculate assigned contig probes
+        # Calculate assigned contig probes
         num_probes = int(round((contig_length / total_target_size) * probe_count))
 
-        # divide the contig into equal parts based on the number of probes
+        # Divide the contig into equal parts based on the number of probes
         split_points = np.linspace(start_pos, stop_pos, num_probes + 1)
 
-
-        for idx, probe in contig_df.iterrows():
-            # find the closest split point for the current probe
+        for idx, probe in target_df[contig_mask].iterrows():
+            # Find the closest split point for the current probe
             closest_point = min(split_points, key=lambda x: abs(x - probe['start']))
 
-            # apply a logarithmic function based on the distance to the closest split point
+            # Apply a logarithmic function based on the distance to the closest split point
             probe_value = -np.log10(abs(probe['start'] - closest_point) + 1)
 
-            # assign distribution value for the probe
-            contig_df.at[idx, 'distribution'] = probe_value
-
-        # append the processed contig dataframe to the list
-        all_contig_dfs.append(contig_df)
-
-    # combine all contig dataframes back into the target_df
-    target_df = pd.concat(all_contig_dfs)
+            # Assign distribution value for the probe
+            target_df.loc[idx, 'distribution'] = probe_value
 
     return target_df
 
@@ -238,18 +231,18 @@ def main(input_directory, priority_file, gtf_directory, output_directory, total_
     combined_df = combined_df.sort_values(by=['genome', 'start', 'stop'])
 
     # separate by 'genome'
-    genome_groups = list(combined_df.groupby('genome'))
+    contig_groups = list(combined_df.groupby('genome'))
 
-    genome_args = [(group_tuple, priority_df) for group_tuple in genome_groups]
+    contig_args = [(group_tuple, priority_df) for group_tuple in contig_groups]
 
-    # process each genome for density
+    # process each contig for density
     with mp.Pool(mp.cpu_count()) as pool:
-        genome_results = pool.map(process_genome, genome_args)
+        contig_results = pool.map(process_contig, contig_args)
 
     pool.close()
     pool.join()
 
-    density_df = pd.concat(genome_results, ignore_index=True)
+    density_df = pd.concat(contig_results, ignore_index=True)
     print("CALCULATED DENSITY")
 
     # sort by target
