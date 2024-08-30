@@ -14,6 +14,10 @@ from scipy.stats import gaussian_kde
 import multiprocessing as mp
 import pandas as pd
 
+
+num_selected_probes = 0
+
+
 ## WEIGHTS ##
 
 W_ON_TARGET = 0.5
@@ -75,25 +79,39 @@ def process_genome(genome_args):
 
 def process_target(target_args):
     # extract arguments
-    target_tuple, priority_map, gtf_files = target_args
+    target_tuple, priority_map, gtf_files, num_selected_probes = target_args
     target_name, group = target_tuple
 
-    # calculate proportional probes
+    # calculate the number of probes proportional to the priority map
+    if target_name not in priority_map:
+        print(f"ERROR: The target {target_name} does not exist in the priority map.")
+        return None
+
     target_probe_count = int(priority_map[target_name] * total_probe_count)
 
-    # calculate sparcity
-    target_df = calculate_sparcity(group, target_probe_count, gtf_files)
+    if group.shape[0] < target_probe_count:
+        print(f"ERROR: The target {target_name} has too few probes. Only {group.shape[0]} will be selected, regardless of quality.")
+        target_probe_count = group.shape[0]  # adjust to select available probes
+
+    else:
+        print(f"INFO: {target_probe_count} probes will be selected for the target {target_name}")
+
+    # calculate sparsity
+    target_df = calculate_sparsity(group, target_probe_count, gtf_files)
+
+    if target_df is None:
+        print(f"ERROR: Sparsity calculation failed for target {target_name}.")
+        return None
 
     # final weighted calculation
     target_df = assign_final_value(target_df)
 
-    # sort and select dedicated fraction of probes
+    #sSort by 'rank' and select the top probes
     target_df = target_df.sort_values(by=['rank'], ascending=False)
     selected_probes = target_df.head(target_probe_count)
 
-    print("Calculated sparcity for " + target_name)
-
     return selected_probes
+
 
 
 ## run density ##
@@ -138,7 +156,7 @@ def calculate_density(genome_df, priority_list):
 
 ## run distribution ##
 
-def calculate_sparcity(target_df, probe_count, gtf_data):
+def calculate_sparsity(target_df, probe_count, gtf_data):
     # open related GTF file based on tag or target
     tag = target_df['tag'].unique()[0]
     if tag not in gtf_data:
@@ -205,7 +223,7 @@ def assign_final_value(target_df):
                          target_df['distribution'] * W_SPARCE)
     return target_df
 
-def main(input_directory, priority_file, gtf_directory, output_directory, total_probe_count):
+def main(input_directory, priority_file, gtf_directory, output_directory, total_probe_count, num_selected_probes):
     # load priority list
     priority_df = load_priority_file(priority_file)
     priority_map = {row['tag']: row['fraction'] for _, row in priority_df.iterrows()}
@@ -240,7 +258,7 @@ def main(input_directory, priority_file, gtf_directory, output_directory, total_
     # separate by 'target'
     target_groups = density_df.groupby('tag')
 
-    target_args = [(target_tuple, priority_map, gtf_files) for target_tuple in target_groups]
+    target_args = [(target_tuple, priority_map, gtf_files, num_selected_probes) for target_tuple in target_groups]
 
     # process each target distribution
     with mp.Pool(mp.cpu_count()) as pool:
@@ -249,14 +267,17 @@ def main(input_directory, priority_file, gtf_directory, output_directory, total_
     pool.close()
     pool.join()
 
+    for target in target_results:
+        num_selected_probes += target.shape[0]
+
     final_df = pd.concat(target_results, ignore_index=True)
-    print("CALCULATED SPARCITY")
+    print("CALCULATED SPARSITY")
 
     # save final result
     output_file = os.path.join(output_directory, f"final_probes.tsv")
     final_df.to_csv(output_file, sep="\t", index=False)
 
-    print(f"Processing complete. {total_probe_count} probes were considered in total.")
+    print(f"Processing complete. {num_selected_probes} probes were considered in total.")
 
 if __name__ == "__main__":
 
@@ -295,4 +316,4 @@ if __name__ == "__main__":
         print(f"Error: {output_directory} is not a valid directory.")
         sys.exit(1)
 
-    main(input_directory, priority_file, gtf_directory, output_directory, total_probe_count)
+    main(input_directory, priority_file, gtf_directory, output_directory, total_probe_count, num_selected_probes)
