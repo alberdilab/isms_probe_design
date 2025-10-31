@@ -681,7 +681,7 @@ class SequenceCrawler:
 
                 chrom_prefix = chrom.split(':')[0]
                 start_coord = int(chrom.split(':')[1].split('-')[0]) + int(start)
-                end_coord = int(chrom.split(':')[1].split('-')[1]) + int(end)
+                end_coord = int(chrom.split(':')[1].split('-')[0]) + int(end) # fixed from ## end_coord = int(chrom.split(':')[1].split('-')[1]) + int(end) ## to output correct final position of the probe
                 tm_value = self.BedprobeTm(seq)
 
                 # here is where I add softmask info for bed
